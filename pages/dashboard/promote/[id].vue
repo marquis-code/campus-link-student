@@ -4,7 +4,7 @@
       <button @click="$router.back()" class="w-10 h-10 glass-card flex items-center justify-center">
         <Icon name="ph:arrow-left-bold" />
       </button>
-      <h1 class="text-2xl font-black text-dark-900 tracking-tight">Promote & Earn</h1>
+      <h1 class="text-2xl font-bold text-dark-900 tracking-tight">Promote & earn</h1>
     </header>
 
     <div v-if="loading" class="animate-pulse space-y-6">
@@ -24,19 +24,23 @@
 
       <!-- Referral Link -->
       <div class="space-y-3">
-        <label class="text-sm font-bold text-dark-500 uppercase tracking-wider ml-1">Your Unique Link</label>
-        <div class="relative">
-          <input :value="referralLink" readonly class="input-field pr-24 py-4 font-mono text-sm bg-dark-50 border-dark-100" />
-          <button @click="copyLink" class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-lg hover:bg-primary-700 transition-colors">
-            {{ copied ? 'COPIED!' : 'COPY' }}
-          </button>
-        </div>
+        <AnimatedInput 
+          label="Your unique link"
+          :model-value="referralLink"
+          readonly
+        >
+          <template #right>
+            <button @click="copyLink" class="px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-lg hover:bg-primary-700 transition-colors mr-2">
+              {{ copied ? 'Copied!' : 'Copy' }}
+            </button>
+          </template>
+        </AnimatedInput>
       </div>
 
       <!-- AI Marketing Copy -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
-          <label class="text-sm font-bold text-dark-500 uppercase tracking-wider ml-1">AI Marketing Copy</label>
+          <label class="text-sm font-bold text-dark-500 tracking-wider ml-1">AI marketing copy</label>
           <button @click="generateCopy" :disabled="generatingCopy" class="text-primary-600 font-bold text-sm flex items-center gap-1">
             <Icon name="ph:arrows-clockwise-bold" :class="{ 'animate-spin': generatingCopy }" />
             Regenerate
@@ -47,14 +51,14 @@
           <!-- WhatsApp Caption -->
           <div class="glass-card overflow-hidden">
             <div class="bg-emerald-50 px-5 py-3 flex items-center justify-between border-b border-emerald-100">
-              <span class="text-emerald-700 font-bold text-xs uppercase tracking-tight flex items-center gap-2">
-                <Icon name="ph:whatsapp-logo-fill" class="text-lg" /> WhatsApp Caption
+              <span class="text-emerald-700 font-bold text-xs tracking-tight flex items-center gap-2">
+                <Icon name="ph:whatsapp-logo-fill" class="text-lg" /> WhatsApp caption
               </span>
-              <button @click="shareOnWhatsapp" class="text-emerald-700 font-bold text-xs hover:underline">Share Now</button>
+              <button @click="shareOnWhatsapp" class="text-emerald-700 font-bold text-xs hover:underline">Share now</button>
             </div>
             <div class="p-5">
               <p class="text-sm text-dark-700 whitespace-pre-wrap leading-relaxed">{{ copy.whatsappCaption }}</p>
-              <div class="mt-4 p-3 bg-dark-50 rounded-xl border border-dashed border-dark-200 text-xs text-dark-500 font-mono italic">
+              <div class="mt-4 p-3 bg-dark-50 rounded-xl border border-dashed border-dark-200 text-xs text-dark-400 font-mono">
                 [Your referral link will be added at the end]
               </div>
             </div>
@@ -63,10 +67,10 @@
           <!-- Marketing Text -->
           <div class="glass-card overflow-hidden">
             <div class="bg-primary-50 px-5 py-3 flex items-center justify-between border-b border-primary-100">
-              <span class="text-primary-700 font-bold text-xs uppercase tracking-tight flex items-center gap-2">
-                <Icon name="ph:megaphone-duotone" class="text-lg" /> Social Media Text
+              <span class="text-primary-700 font-bold text-xs tracking-tight flex items-center gap-2">
+                <Icon name="ph:megaphone-duotone" class="text-lg" /> Social media text
               </span>
-              <button @click="copyText(copy.marketingText)" class="text-primary-700 font-bold text-xs hover:underline">Copy Text</button>
+              <button @click="copyText(copy.marketingText)" class="text-primary-700 font-bold text-xs hover:underline">Copy text</button>
             </div>
             <div class="p-5">
               <p class="text-sm text-dark-700 whitespace-pre-wrap leading-relaxed">{{ copy.marketingText }}</p>
@@ -77,9 +81,9 @@
 
       <!-- Actions -->
       <div class="pt-4 flex flex-col gap-4 pb-12">
-        <button @click="shareOnWhatsapp" class="btn-primary bg-emerald-600 shadow-emerald-500/30 flex items-center justify-center gap-3 py-5 text-lg">
+        <button @click="shareOnWhatsapp" class="btn-primary bg-emerald-600 flex items-center justify-center gap-3 py-5 text-lg font-bold">
           <Icon name="ph:whatsapp-logo-fill" class="text-2xl" />
-          Post to WhatsApp Status
+          Post to WhatsApp status
         </button>
         <p class="text-center text-dark-400 text-xs px-10">
           Tip: Posting on WhatsApp status is the most effective way to earn on campus!
@@ -90,6 +94,8 @@
 </template>
 
 <script setup lang="ts">
+import AnimatedInput from '@/components/ui/AnimatedInput.vue'
+
 const route = useRoute()
 const { $api } = useNuxtApp()
 const config = useRuntimeConfig()

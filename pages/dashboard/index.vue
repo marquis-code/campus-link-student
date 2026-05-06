@@ -3,8 +3,8 @@
     <!-- Header -->
     <header class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-black text-dark-900">Discover Products</h1>
-        <p class="text-dark-500 font-medium">{{ user?.campus?.name || 'Your Campus' }}</p>
+        <h1 class="text-2xl font-bold text-dark-900">Discover products</h1>
+        <p class="text-dark-500 font-medium">{{ user?.campus?.name || 'Your campus' }}</p>
       </div>
       <button class="w-12 h-12 glass-card flex items-center justify-center relative">
         <Icon name="ph:bell-duotone" class="text-2xl text-dark-700" />
@@ -14,14 +14,19 @@
 
     <!-- Search & Filters -->
     <div class="space-y-4">
-      <div class="relative">
-        <Icon name="ph:magnifying-glass-bold" class="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 text-xl" />
-        <input v-model="search" type="text" placeholder="Search products, brands, or categories..." class="input-field pl-12 py-4 bg-white border-2 border-dark-100 focus:border-primary-600 transition-colors" />
-      </div>
+      <AnimatedInput 
+        v-model="search"
+        label="Search products, brands, or categories..."
+        placeholder="Try 'cakes' or 'laptops'"
+      >
+        <template #right>
+          <Icon name="ph:magnifying-glass-bold" class="text-dark-400 text-xl mr-2" />
+        </template>
+      </AnimatedInput>
 
       <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         <button @click="selectedCategory = ''" class="px-6 py-2.5 rounded-full font-bold transition-all whitespace-nowrap border-2" :class="selectedCategory === '' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-dark-500 border-dark-100 hover:border-dark-200'">
-          All Items
+          All items
         </button>
         <button v-for="cat in categories" :key="cat._id" @click="selectedCategory = cat._id" class="px-6 py-2.5 rounded-full font-bold transition-all whitespace-nowrap border-2" :class="selectedCategory === cat._id ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-dark-500 border-dark-100 hover:border-dark-200'">
           {{ cat.icon }} {{ cat.name }}
@@ -53,6 +58,8 @@
 </template>
 
 <script setup lang="ts">
+import AnimatedInput from '@/components/ui/AnimatedInput.vue'
+
 const { user } = useUser()
 const { products, loading, fetchProducts } = useFetchProducts()
 const { categories, fetchCategories } = useFetchCategories()

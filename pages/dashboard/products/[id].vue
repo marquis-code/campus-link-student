@@ -27,49 +27,71 @@
             <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2">
               <Icon name="ph:check-circle-duotone" class="text-4xl" />
             </div>
-            <h2 class="text-2xl font-black text-dark-900">Order Placed!</h2>
-            <p class="text-dark-500">Pay via Bank Transfer to confirm your order.</p>
+            <h2 class="text-2xl font-bold text-dark-900">Order placed!</h2>
+            <p class="text-dark-500">Pay via bank transfer to confirm your order.</p>
           </div>
 
           <div class="bg-dark-50 p-6 rounded-3xl space-y-4 border border-dark-100">
             <div class="flex justify-between items-center pb-4 border-b border-dark-200">
-              <span class="text-dark-500 font-bold uppercase tracking-wider text-[10px]">Bank Name</span>
-              <span class="text-dark-900 font-black">{{ orderCreated.bankName }}</span>
+              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Bank name</span>
+              <span class="text-dark-900 font-bold">{{ orderCreated.bankName }}</span>
             </div>
             <div class="flex justify-between items-center py-2">
-              <span class="text-dark-500 font-bold uppercase tracking-wider text-[10px]">Account Number</span>
+              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Account number</span>
               <div class="flex items-center gap-2">
-                <span class="text-dark-900 font-black text-xl">{{ orderCreated.accountNumber }}</span>
+                <span class="text-dark-900 font-bold text-xl">{{ orderCreated.accountNumber }}</span>
                 <button @click="copy(orderCreated.accountNumber)" class="p-1 text-primary-600"><Icon name="ph:copy-bold" /></button>
               </div>
             </div>
             <div class="flex justify-between items-center py-2">
-              <span class="text-dark-500 font-bold uppercase tracking-wider text-[10px]">Account Name</span>
+              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Account name</span>
               <span class="text-dark-900 font-bold">{{ orderCreated.accountName }}</span>
             </div>
             <div class="flex justify-between items-center pt-4 border-t border-dark-200">
-              <span class="text-dark-500 font-bold uppercase tracking-wider text-[10px]">Amount Due</span>
-              <span class="text-primary-600 font-black text-lg">₦{{ orderCreated.totalAmount.toLocaleString() }}</span>
+              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Amount due</span>
+              <span class="text-primary-600 font-bold text-lg">₦{{ orderCreated.totalAmount.toLocaleString() }}</span>
             </div>
           </div>
           
-          <button @click="orderCreated = null" class="w-full py-4 text-dark-500 font-bold underline">Back to Product</button>
+          <button @click="orderCreated = null" class="w-full py-4 text-dark-500 font-bold underline">Back to product</button>
         </div>
 
         <!-- Order Form -->
         <div v-else-if="showOrderForm" class="space-y-6">
-          <h2 class="text-2xl font-black text-dark-900">Complete Your Order</h2>
+          <h2 class="text-2xl font-bold text-dark-900">Complete your order</h2>
           <div class="space-y-4">
-            <input v-model="orderForm.buyerName" type="text" placeholder="Full Name" class="input-field" />
-            <input v-model="orderForm.buyerEmail" type="email" placeholder="Email Address" class="input-field" />
-            <input v-model="orderForm.buyerPhone" type="tel" placeholder="Phone Number" class="input-field" />
-            <textarea v-model="orderForm.notes" placeholder="Delivery Instructions (Optional)" class="input-field h-24 pt-4"></textarea>
+            <AnimatedInput 
+              label="Full name"
+              v-model="orderForm.buyerName"
+              placeholder="Your full name"
+              required
+            />
+            <AnimatedInput 
+              label="Email address"
+              v-model="orderForm.buyerEmail"
+              type="email"
+              placeholder="Your email address"
+              required
+            />
+            <AnimatedInput 
+              label="Phone number"
+              v-model="orderForm.buyerPhone"
+              type="tel"
+              placeholder="Your phone number"
+              required
+            />
+            <AnimatedInput 
+              label="Delivery instructions (optional)"
+              v-model="orderForm.notes"
+              type="textarea"
+              placeholder="e.g. Leave at the gate"
+            />
           </div>
           <div class="flex gap-4">
-            <button @click="showOrderForm = false" class="btn-secondary flex-1 py-4">Cancel</button>
-            <button @click="handlePlaceOrder" :disabled="orderLoading" class="btn-primary flex-[2] py-4 flex justify-center">
+            <button @click="showOrderForm = false" class="btn-secondary flex-1 py-4 font-bold">Cancel</button>
+            <button @click="handlePlaceOrder" :disabled="orderLoading" class="btn-primary flex-[2] py-4 flex justify-center font-bold">
               <Icon v-if="orderLoading" name="ph:spinner-bold" class="animate-spin text-2xl" />
-              <span v-else>Confirm Order</span>
+              <span v-else>Confirm order</span>
             </button>
           </div>
         </div>
@@ -77,16 +99,16 @@
         <div v-else class="space-y-8">
           <div class="flex justify-between items-start">
             <div class="space-y-1">
-              <span class="px-3 py-1 bg-primary-50 text-primary-600 text-xs font-bold rounded-full uppercase tracking-wider">{{ product.category?.name }}</span>
-              <h1 class="text-3xl font-black text-dark-900 leading-tight pt-1">{{ product.name }}</h1>
+              <span class="px-3 py-1 bg-primary-50 text-primary-600 text-xs font-bold rounded-full tracking-wider">{{ product.category?.name }}</span>
+              <h1 class="text-3xl font-bold text-dark-900 leading-tight pt-1">{{ product.name }}</h1>
               <p class="text-dark-500 font-medium flex items-center gap-1">
                 <Icon name="ph:map-pin-duotone" class="text-primary-500" />
                 {{ product.campus?.name }}
               </p>
             </div>
             <div class="text-right">
-              <p class="text-3xl font-black text-dark-900">₦{{ product.price?.toLocaleString() }}</p>
-              <p v-if="isPromoter" class="text-emerald-600 font-bold text-sm">₦{{ product.commissionAmount?.toLocaleString() }} Earnable</p>
+              <p class="text-3xl font-bold text-dark-900">₦{{ product.price?.toLocaleString() }}</p>
+              <p v-if="isPromoter" class="text-emerald-600 font-bold text-sm">₦{{ product.commissionAmount?.toLocaleString() }} earnable</p>
             </div>
           </div>
 
@@ -106,15 +128,15 @@
           </div>
 
           <div class="grid grid-cols-1 gap-4 pt-4">
-            <NuxtLink v-if="isPromoter" :to="`/promote/${product._id}`" class="btn-primary py-5 text-lg shadow-xl shadow-primary-500/30 text-center">
-              Promote & Earn Commission
+            <NuxtLink v-if="isPromoter" :to="`/promote/${product._id}`" class="btn-primary py-5 text-lg text-center font-bold">
+              Promote & earn commission
             </NuxtLink>
-            <button @click="showOrderForm = true" class="btn-primary py-5 text-lg shadow-xl shadow-primary-500/30 text-center">
-              Order Now — ₦{{ product.price?.toLocaleString() }}
+            <button @click="showOrderForm = true" class="btn-primary py-5 text-lg text-center font-bold">
+              Order now — ₦{{ product.price?.toLocaleString() }}
             </button>
-            <a :href="`https://wa.me/${product.seller?.phone}?text=Hello, I am interested in buying ${product.name} from CampusLink`" target="_blank" class="btn-secondary py-5 text-lg text-center flex items-center justify-center gap-2">
+            <a :href="`https://wa.me/${product.seller?.phone}?text=Hello, I am interested in buying ${product.name} from CampusLink`" target="_blank" class="btn-secondary py-5 text-lg text-center flex items-center justify-center gap-2 font-bold">
               <Icon name="ph:whatsapp-logo-fill" class="text-emerald-500 text-2xl" />
-              Chat with Seller
+              Chat with seller
             </a>
           </div>
         </div>
@@ -124,6 +146,8 @@
 </template>
 
 <script setup lang="ts">
+import AnimatedInput from '@/components/ui/AnimatedInput.vue'
+
 const route = useRoute()
 const { fetchProduct, loading } = useFetchProduct()
 const { createOrder, loading: orderLoading } = useOrders()

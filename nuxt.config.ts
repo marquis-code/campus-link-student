@@ -5,20 +5,25 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss'],
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/font/stylesheet.css', '~/assets/css/main.css'],
   build: {
     transpile: ["lucide-vue-next"],
   },
   imports: {
-    dirs: ['composables', 'composables/**', 'composables/modules/**']
+    dirs: [
+      'composables',
+      'composables/**',
+      'composables/core',
+      'composables/modules/**'
+    ]
   },
   postcss: {
     plugins: {
-      "postcss-import": {},
-      "tailwindcss/nesting": {},
-      tailwindcss: {},
       autoprefixer: {},
     },
+  },
+  tailwindcss: {
+    configPath: '~/tailwind.config.js',
   },
   vite: {
     server: {

@@ -1,21 +1,32 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-white">
-    <div class="w-full max-w-md space-y-8">
+  <div class="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-gray-50">
+    <div v-if="loginData && loginErrors" class="w-full max-w-md space-y-8 bg-white p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50">
       <div class="text-center">
-        <h1 class="text-4xl font-extrabold text-primary-600 tracking-tight">CAMPUSLINK</h1>
-        <p class="mt-2 text-dark-500 font-medium">Welcome back! Please login to your account.</p>
+        <img src="@/assets/images/logo.png" alt="CampusLink" class="h-20 w-20 mx-auto mb-6 object-contain" />
+        <h1 class="text-3xl font-black text-dark-900 tracking-tight">Welcome Back</h1>
+        <p class="mt-2 text-dark-400 font-medium">Login to your promoter account.</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="mt-8 space-y-6">
         <div class="space-y-4">
-          <div>
-            <label for="email" class="block text-sm font-semibold text-dark-700 ml-1 mb-1">Email address</label>
-            <input id="email" v-model="form.email" type="email" required class="input-field" placeholder="you@example.com" />
-          </div>
-          <div>
-            <label for="password" class="block text-sm font-semibold text-dark-700 ml-1 mb-1">Password</label>
-            <input id="password" v-model="form.password" type="password" required class="input-field" placeholder="••••••••" />
-          </div>
+          <AnimatedInput 
+            label="Email address"
+            v-model="loginData.email"
+            type="email"
+            required
+            placeholder="you@example.com"
+            :error-message="loginErrors.email"
+            :show-error="!!loginErrors.email"
+          />
+          <AnimatedInput 
+            label="Password"
+            v-model="loginData.password"
+            type="password"
+            required
+            placeholder="••••••••"
+            :error-message="loginErrors.password"
+            :show-error="!!loginErrors.password"
+          />
         </div>
 
         <div class="flex items-center justify-between">
@@ -29,7 +40,11 @@
         </div>
 
         <div>
-          <button type="submit" :disabled="loading" class="btn-primary w-full flex justify-center py-4">
+          <button 
+            type="submit" 
+            :disabled="loading || !isFormValid" 
+            class="btn-primary w-full flex justify-center py-4 rounded-2xl text-lg font-bold shadow-lg shadow-primary-600/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <template v-if="loading">
               <Icon name="ph:spinner-bold" class="animate-spin text-2xl" />
             </template>
@@ -39,10 +54,10 @@
 
         <div class="relative py-2">
           <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-dark-100"></div></div>
-          <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-dark-400 font-bold">Or continue with</span></div>
+          <div class="relative flex justify-center text-xs"><span class="bg-white px-2 text-dark-400 font-bold uppercase tracking-wider">Or continue with</span></div>
         </div>
 
-        <button @click="handleGoogleLogin" type="button" class="w-full flex items-center justify-center gap-3 py-4 border-2 border-dark-100 rounded-2xl font-bold text-dark-700 hover:bg-dark-50 transition-all">
+        <button @click="handleGoogleLogin" type="button" class="w-full flex items-center justify-center gap-3 py-4 border-2 border-dark-100 rounded-2xl font-bold text-dark-700 hover:bg-dark-50 transition-all active:scale-[0.98]">
           <Icon name="logos:google-icon" class="text-xl" />
           Sign in with Google
         </button>
@@ -57,29 +72,66 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import AnimatedInput from '@/components/ui/AnimatedInput.vue'
+
 definePageMeta({
   layout: false
+})
+
+const loginData = ref({
+  email: '',
+  password: ''
+})
+
+const loginErrors = ref({
+  email: '',
+  password: ''
 })
 
 const { login, loading: loginLoading } = useLogin()
 const { socialLogin, loading: socialLoading } = useSocialLogin()
 const { loginWithGoogle } = useFirebase()
+const { showLoading, hideLoading } = useGlobalLoading()
 
-const loading = computed(() => loginLoading.value || socialLoading.value)
-const form = reactive({
-  email: '',
-  password: ''
+// Real-time validation
+watch(() => loginData.value.email, (val) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (val.length > 0 && !emailRegex.test(val)) loginErrors.value.email = 'Please enter a valid email address'
+  else loginErrors.value.email = ''
 })
 
+watch(() => loginData.value.password, (val) => {
+  if (val.length > 0 && val.length < 6) loginErrors.value.password = 'Password must be at least 6 characters'
+  else loginErrors.value.password = ''
+})
+
+const isFormValid = computed(() => {
+  return loginData.value.email && 
+         loginData.value.password && 
+         !loginErrors.value.email && 
+         !loginErrors.value.password
+})
+
+const loading = computed(() => loginLoading.value || socialLoading.value)
+
 const handleLogin = async () => {
-  const res = await login(form)
+  if (!isFormValid.value) return
+  
+  showLoading()
+  const res = await login(loginData.value)
+  hideLoading()
+  
   if (res) navigateTo('/')
 }
 
 const handleGoogleLogin = async () => {
   const idToken = await loginWithGoogle()
   if (idToken) {
+    showLoading()
     const res = await socialLogin(idToken)
+    hideLoading()
+    
     if (res) navigateTo('/')
   }
 }
