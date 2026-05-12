@@ -1,22 +1,39 @@
-import { useNotificationState } from './useNotificationState'
-import { useUser } from '@/composables/modules/auth/user'
+import { notifications_api } from "@/api_factory/modules/notifications";
 
 export const useFetchNotifications = () => {
-  const { notifications, unreadCount } = useNotificationState()
-  const { token } = useUser()
-  const config = useRuntimeConfig()
+  const loading = ref(false);
+  const notifications = ref([]);
 
   const fetchNotifications = async () => {
+    loading.value = true;
     try {
-        const response = await $fetch(`${config.public.apiBase}/notifications`, {
-            headers: { Authorization: `Bearer ${token.value}` }
-        }) as any
-        notifications.value = response.notifications
-        unreadCount.value = response.unreadCount
-    } catch (e) {
-        console.error('Failed to fetch notifications', e)
+      const res: any = await notifications_api.getNotifications();
+      if (res.type !== "ERROR") {
+        notifications.value = res.data;
+      }
+    } finally {
+      loading.value = false;
     }
-  }
+  };
 
-  return { fetchNotifications }
-}
+  const markRead = async (id: string) => {
+    try {
+      const res: any = await notifications_api.markAsRead(id);
+      if (res.type !== "ERROR") {
+        const notif = notifications.value.find(n => n._id === id);
+        if (notif) notif.isRead = true;
+      }
+    } catch (e) {}
+  };
+
+  const markAllRead = async () => {
+    try {
+      const res: any = await notifications_api.markAllAsRead();
+      if (res.type !== "ERROR") {
+        notifications.value.forEach(n => n.isRead = true);
+      }
+    } catch (e) {}
+  };
+
+  return { loading, notifications, fetchNotifications, markRead, markAllRead };
+};

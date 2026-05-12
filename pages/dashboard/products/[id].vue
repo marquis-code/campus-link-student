@@ -181,8 +181,14 @@ const handlePlaceOrder = async () => {
   }
 }
 
+const { showToast } = useCustomToast()
+
 const copy = (text: string) => {
   navigator.clipboard.writeText(text)
-  alert('Account number copied!')
+  showToast({
+    title: 'Copied',
+    message: 'Account number copied to clipboard!',
+    toastType: 'success'
+  })
 }
 </script>

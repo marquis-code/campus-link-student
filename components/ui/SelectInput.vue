@@ -1,271 +1,225 @@
 <template>
-    <div class="mb-2">
-      <div class="relative input-container" ref="containerRef">
-        <!-- Floating Label -->
-        <label
-          :for="inputId"
-          :class="[
-            'absolute transition-all duration-300 ease-in-out pointer-events-none z-10',
-            isFocused || modelValue ? 'text-xs text-gray-500 left-3 top-2' : 'text-base text-gray-500 left-3 top-1/2 transform -translate-y-1/2'
-          ]"
-        >
-          {{ label }}
-        </label>
-  
-        <!-- Select trigger -->
-        <div
-          @click="toggleDropdown"
-          :class="[
-            'w-full py-4 pt-6 px-3 bg-white border border-gray-300 flex justify-between items-center cursor-pointer',
-            'focus:outline-none focus:ring-1 focus:ring-[#3BAB22] focus:border-[#3BAB22] transition-all duration-300',
-            roundedClasses,
-            disabled ? 'opacity-50 cursor-not-allowed' : '',
-            (hasError || (errorMessage && showError)) ? 'ring-1 ring-red-500 border-red-500' : ''
-          ]"
-        >
-          <span class="text-[#1A1A1B]">
-            <!-- Custom selected label slot -->
-            <slot 
-              v-if="slots['selected-label'] && selectedOption" 
-              name="selected-label" 
-              :option="selectedOption"
-            />
-            <!-- Default selected label -->
-            <template v-else>
-              {{ selectedLabel || placeholder }}
-            </template>
-          </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-4 h-4 transition-transform duration-200"
-            :class="{ 'transform rotate-180': showDropdown }"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
-        </div>
-  
+  <div class="w-full">
+    <div class="relative" ref="containerRef">
+      <!-- Label -->
+      <label
+        v-if="label"
+        :for="inputId"
+        class="block text-sm font-bold text-gray-700 mb-2 ml-1"
+      >
+        {{ label }}
+      </label>
+
+      <!-- Select trigger -->
+      <div
+        @click="toggleDropdown"
+        :class="[
+          'w-full py-4 px-5 bg-white border rounded-2xl flex justify-between items-center cursor-pointer transition-all text-sm font-medium',
+          disabled ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:border-gray-300',
+          showDropdown ? 'border-black ring-1 ring-black' : 'border-gray-200',
+          (hasError || (errorMessage && showError)) ? 'border-red-400 ring-1 ring-red-400' : ''
+        ]"
+      >
+        <span :class="selectedLabel ? 'text-gray-900' : 'text-gray-400'">
+          <slot 
+            v-if="slots['selected-label'] && selectedOption" 
+            name="selected-label" 
+            :option="selectedOption"
+          />
+          <template v-else>
+            {{ selectedLabel || placeholder }}
+          </template>
+        </span>
+        <ChevronDown
+          class="w-4 h-4 text-gray-400 transition-transform duration-300"
+          :class="{ 'rotate-180': showDropdown }"
+        />
+      </div>
+
+      <!-- Dropdown -->
+      <Transition name="dropdown">
         <div
           v-if="showDropdown"
-          class="absolute z-[10000000] mt-1 w-full bg-white rounded-2xl border border-gray-300 overflow-hidden"
+          class="absolute z-50 mt-2 w-full bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-2xl"
         >
-          <!-- Search Input -->
-          <div class="p-2 border-b-[0.5px] border-gray-50 sticky top-0 bg-white">
+          <!-- Search -->
+          <div class="p-3 border-b border-gray-50">
             <div class="relative">
-              <svg 
-                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
-              </svg>
+              <Search 
+                class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" 
+              />
               <input
                 ref="searchInputRef"
                 v-model="searchQuery"
                 type="text"
-                placeholder="Search..."
-                class="w-full pl-9 pr-3 py-3 border-[0.5px] border-gray-300 rounded-lg focus:border-[0.5px] focus:border-[#3BAB22] outline-none text-sm"
+                placeholder="Search options..."
+                class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl outline-none text-sm text-gray-900 focus:bg-white focus:border-gray-200 transition-all placeholder:text-gray-400 font-medium"
                 @click.stop
               />
             </div>
           </div>
           
-          <!-- Options List -->
-          <div class="max-h-48 overflow-y-auto">
+          <!-- Options -->
+          <div class="max-h-60 overflow-y-auto overscroll-contain no-scrollbar">
             <div
               v-for="(option, index) in filteredOptions"
               :key="index"
               @click="selectOption(option)"
-              class="p-3 font-medium hover:bg-gray-25 m-1 rounded-lg cursor-pointer transition-colors text-sm text-[#1A1A1B]"
+              class="px-5 py-4 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors flex items-center justify-between group border-b border-gray-50 last:border-0"
             >
-              <!-- Custom option slot -->
-              <slot v-if="slots.default" :option="option" :index="index" />
-              <!-- Default option display -->
-              <template v-else>
-                {{ getLabel(option) }}
-              </template>
+              <div class="flex-1 font-medium">
+                <slot v-if="slots.default" :option="option" :index="index" />
+                <template v-else>
+                  {{ getLabel(option) }}
+                </template>
+              </div>
+              <div v-if="getValue(option) === modelValue" class="text-black">
+                <Check class="w-4 h-4 stroke-[3]" />
+              </div>
             </div>
             
-            <!-- No results message -->
             <div 
               v-if="filteredOptions.length === 0" 
-              class="p-4 text-center text-sm text-gray-500"
+              class="p-10 text-center text-sm text-gray-400 font-bold"
             >
-              No results found for "{{ searchQuery }}"
+              No results for "{{ searchQuery }}"
             </div>
           </div>
         </div>
-      </div>
-  
-      <!-- Error message -->
-      <div v-if="errorMessage && showError" class="mt-2 flex items-center text-red-600 text-sm">
-        <svg class="mr-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-             viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" x2="12" y1="8" y2="12"/>
-          <line x1="12" x2="12.01" y1="16" y2="16"/>
-        </svg>
+      </Transition>
+    </div>
+
+    <!-- Error -->
+    <Transition name="fade">
+      <div v-if="errorMessage && showError" class="mt-2 flex items-center text-red-500 text-[10px] font-black uppercase tracking-wider gap-1.5 ml-1">
+        <AlertCircle class="w-3.5 h-3.5" />
         {{ errorMessage }}
       </div>
-    </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { ref, computed, useId, onMounted, onUnmounted, nextTick } from 'vue'
-  
-  // Props
-  interface Props {
-    modelValue?: string | number
-    label: string
-    options?: Array<string | { label?: string, value?: string, name?: string, code?: string, [key: string]: any }>
-    placeholder?: string
-    disabled?: boolean
-    errorMessage?: string
-    showError?: boolean
-    hasError?: boolean
-    position?: 'top' | 'middle' | 'bottom' | 'standalone'
-  }
-  const props = withDefaults(defineProps<Props>(), {
-    modelValue: '',
-    options: () => [],
-    placeholder: '',
-    disabled: false,
-    errorMessage: '',
-    showError: true,
-    hasError: false,
-    position: 'standalone'
-  })
-  
-  // Slots
-  const slots = defineSlots<{
-    default?: (props: { option: any, index: number }) => any
-    'selected-label'?: (props: { option: any }) => any
-  }>()
-  
-  // Emits
-  const emit = defineEmits<{
-    (e: 'update:modelValue', value: string | number): void
-  }>()
-  
-  // Refs
-  const showDropdown = ref(false)
-  const isFocused = ref(false)
-  const containerRef = ref<HTMLElement | null>(null)
-  const searchInputRef = ref<HTMLInputElement | null>(null)
-  const searchQuery = ref('')
-  const inputId = useId()
-  
-  // Methods
-  const toggleDropdown = async () => {
-    if (!props.disabled) {
-      showDropdown.value = !showDropdown.value
-      isFocused.value = true
-      
-      // Focus search input when dropdown opens
-      if (showDropdown.value) {
-        await nextTick()
-        searchInputRef.value?.focus()
-      } else {
-        searchQuery.value = ''
-      }
-    }
-  }
-  
-  const selectOption = (option: any) => {
-    // Support multiple formats: string, { value }, { code }, { name }
-    let val: string | number
-    if (typeof option === 'string') {
-      val = option
-    } else if (option.value) {
-      val = option.value
-    } else if (option.code) {
-      val = option.code
-    } else if (option.name) {
-      val = option.name
+    </Transition>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, useId, onMounted, onUnmounted, nextTick } from 'vue'
+import { ChevronDown, Search, Check, AlertCircle } from 'lucide-vue-next'
+
+interface Props {
+  modelValue?: string | number
+  label?: string
+  options?: Array<string | { label?: string, value?: string, name?: string, code?: string, [key: string]: any }>
+  placeholder?: string
+  disabled?: boolean
+  errorMessage?: string
+  showError?: boolean
+  hasError?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: '',
+  label: '',
+  options: () => [],
+  placeholder: 'Select option',
+  disabled: false,
+  errorMessage: '',
+  showError: true,
+  hasError: false,
+})
+
+const slots = defineSlots<{
+  default?: (props: { option: any, index: number }) => any
+  'selected-label'?: (props: { option: any }) => any
+}>()
+
+const emit = defineEmits(['update:modelValue'])
+
+const showDropdown = ref(false)
+const containerRef = ref<HTMLElement | null>(null)
+const searchInputRef = ref<HTMLInputElement | null>(null)
+const searchQuery = ref('')
+const inputId = useId()
+
+const toggleDropdown = async () => {
+  if (!props.disabled) {
+    showDropdown.value = !showDropdown.value
+    if (showDropdown.value) {
+      await nextTick()
+      searchInputRef.value?.focus()
     } else {
-      val = option
-    }
-    
-    emit('update:modelValue', val)
-    showDropdown.value = false
-    isFocused.value = false
-    searchQuery.value = ''
-  }
-  
-  const getLabel = (option: any): string => {
-    if (typeof option === 'string') return option
-    // Support multiple label formats
-    return option.label || option.name || option.value || option.code || String(option)
-  }
-  
-  const getValue = (option: any): string | number => {
-    if (typeof option === 'string') return option
-    return option.value || option.code || option.name || option
-  }
-  
-  const selectedLabel = computed(() => {
-    const found = props.options.find((opt) => {
-      const optValue = getValue(opt)
-      return optValue === props.modelValue
-    })
-    return found ? getLabel(found) : ''
-  })
-  
-  const selectedOption = computed(() => {
-    return props.options.find((opt) => {
-      const optValue = getValue(opt)
-      return optValue === props.modelValue
-    })
-  })
-  
-  // Filter options based on search query
-  const filteredOptions = computed(() => {
-    if (!searchQuery.value.trim()) {
-      return props.options
-    }
-    
-    const query = searchQuery.value.toLowerCase()
-    return props.options.filter((option) => {
-      const label = getLabel(option).toLowerCase()
-      return label.includes(query)
-    })
-  })
-  
-  const roundedClasses = computed(() => {
-    switch (props.position) {
-      case 'top':
-        return 'rounded-t-xl rounded-b-sm'
-      case 'middle':
-        return 'rounded-sm'
-      case 'bottom':
-        return 'rounded-b-xl rounded-t-sm'
-      case 'standalone':
-      default:
-        return 'rounded-2xl'
-    }
-  })
-  
-  // Click outside handler
-  const handleClickOutside = (event: MouseEvent) => {
-    if (containerRef.value && !containerRef.value.contains(event.target as Node)) {
-      showDropdown.value = false
-      isFocused.value = false
       searchQuery.value = ''
     }
   }
-  
-  onMounted(() => {
-    document.addEventListener('click', handleClickOutside)
+}
+
+const selectOption = (option: any) => {
+  let val = getValue(option)
+  emit('update:modelValue', val)
+  showDropdown.value = false
+  searchQuery.value = ''
+}
+
+const getLabel = (option: any): string => {
+  if (typeof option === 'string') return option
+  return option.label || option.name || option.value || option.code || String(option)
+}
+
+const getValue = (option: any): string | number => {
+  if (typeof option === 'string') return option
+  return option.value ?? option.code ?? option.name ?? option
+}
+
+const selectedLabel = computed(() => {
+  const found = props.options.find((opt) => getValue(opt) === props.modelValue)
+  return found ? getLabel(found) : ''
+})
+
+const selectedOption = computed(() => {
+  return props.options.find((opt) => getValue(opt) === props.modelValue)
+})
+
+const filteredOptions = computed(() => {
+  if (!searchQuery.value.trim()) return props.options
+  const query = searchQuery.value.toLowerCase()
+  return props.options.filter((option) => {
+    const label = getLabel(option).toLowerCase()
+    return label.includes(query)
   })
-  
-  onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside)
-  })
-  </script>
-  
-  <style scoped>
-  .input-container {
-    position: relative;
+})
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (containerRef.value && !containerRef.value.contains(event.target as Node)) {
+    showDropdown.value = false
+    searchQuery.value = ''
   }
-  </style>
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
+
+<style scoped>
+.dropdown-enter-active, .dropdown-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dropdown-enter-from, .dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

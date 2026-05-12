@@ -1,34 +1,35 @@
 <template>
   <Transition name="fade">
-    <div v-if="active" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
+    <div v-if="active" class="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm">
       <div class="relative flex items-center justify-center">
         <!-- Logo in center -->
         <div class="absolute inset-0 flex items-center justify-center">
-          <img src="@/assets/images/logo.png" alt="CampusLink" class="h-12 w-12 object-contain animate-pulse" />
+          <div class="w-12 h-12 bg-black rounded-xl flex items-center justify-center animate-pulse">
+            <Icon name="GraduationCap" class="text-white text-xl" />
+          </div>
         </div>
         
         <!-- Spinning ring -->
-        <svg class="h-32 w-32 animate-spin text-primary-600" viewBox="0 0 100 100">
+        <svg class="h-32 w-32 animate-[spin_1.5s_linear_infinite] text-black" viewBox="0 0 100 100">
           <circle 
-            class="opacity-25" 
+            class="opacity-5" 
             cx="50" cy="50" r="45" 
             stroke="currentColor" 
-            stroke-width="2" 
+            stroke-width="1.5" 
             fill="none" 
           />
           <circle 
-            class="opacity-75" 
             cx="50" cy="50" r="45" 
             stroke="currentColor" 
-            stroke-width="2" 
+            stroke-width="1.5" 
             fill="none" 
             stroke-dasharray="282.7" 
-            stroke-dashoffset="210" 
+            stroke-dashoffset="200" 
             stroke-linecap="round" 
           />
         </svg>
       </div>
-      <p class="mt-4 text-dark-900 font-bold tracking-widest uppercase text-xs animate-pulse">Loading CampusLink...</p>
+      <p class="mt-8 text-black font-bold tracking-[0.2em] uppercase text-[10px] animate-pulse">Loading Hub</p>
     </div>
   </Transition>
 </template>
@@ -42,7 +43,7 @@ defineProps<{
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 }
 
 .fade-enter-from,

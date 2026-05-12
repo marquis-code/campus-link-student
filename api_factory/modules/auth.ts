@@ -16,4 +16,10 @@ export const auth_api = {
   updateProfile: (data: any) => {
     return GATEWAY_ENDPOINT_WITH_AUTH.patch("/auth/profile", data);
   },
+  forgotPassword: (email: string) => {
+    return GATEWAY_ENDPOINT.post("/auth/forgot-password", { email });
+  },
+  resetPassword: (data: any) => {
+    return GATEWAY_ENDPOINT.post("/auth/reset-password", data);
+  },
 };

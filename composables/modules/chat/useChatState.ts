@@ -1,39 +1,78 @@
 import { ref } from 'vue'
 import { io, Socket } from 'socket.io-client'
-import { useUser } from '@/composables/modules/auth/user'
 
 const conversations = ref<any[]>([])
 const activeConversation = ref<any>(null)
 const messages = ref<any[]>([])
 const isTyping = ref(false)
-let socket: Socket | null = null
+const onlineUsers = ref<Set<string>>(new Set())
+const socket = ref<Socket | null>(null)
 
 export const useChatState = () => {
-  const { token } = useUser()
   const config = useRuntimeConfig()
   const baseUrl = config.public.apiBase.replace('/api', '')
 
-  const initSocket = () => {
-    if (socket || !token.value) return
+  const initSocket = (force = false) => {
+    if (socket.value && !force) return
+    if (socket.value && force) {
+      socket.value.disconnect()
+      socket.value = null
+    }
 
-    socket = io(baseUrl, {
-      auth: { token: token.value },
+    const token = localStorage.getItem('auth_token')
+    const guestId = localStorage.getItem('guest_chat_id')
+    
+    if (!token && !guestId) return
+
+    socket.value = io(`${baseUrl}/chat`, {
+      auth: { 
+        token: token || undefined,
+        guestId: guestId || undefined
+      },
     })
 
-    socket.on('new_message', (message) => {
+    socket.value.on('connect', () => {
+      console.log('💬 Chat socket connected (User/Guest)')
+    })
+
+    socket.value.on('new_message', (message) => {
       if (activeConversation.value?._id === message.conversation) {
         messages.value.push(message)
+        socket.value?.emit('mark_read', { conversationId: message.conversation, messageId: message._id })
       }
+      
       const conv = conversations.value.find(c => c._id === message.conversation)
       if (conv) {
         conv.lastMessage = message
-        conv.updatedAt = new Date()
+        conv.updatedAt = new Date().toISOString()
+        if (activeConversation.value?._id !== message.conversation) {
+          conv.unreadCount = (conv.unreadCount || 0) + 1
+        }
       }
     })
 
-    socket.on('user_typing', (data) => {
+    socket.value.on('user_typing', (data) => {
       if (activeConversation.value?._id === data.conversationId) {
         isTyping.value = data.isTyping
+      }
+    })
+
+    socket.value.on('presence', (data) => {
+      if (data.online) {
+        onlineUsers.value.add(data.userId)
+      } else {
+        onlineUsers.value.delete(data.userId)
+      }
+    })
+
+    socket.value.on('message_read', (data) => {
+      const msg = messages.value.find(m => m._id === data.messageId)
+      if (msg) {
+        msg.isRead = true
+        msg.readBy = msg.readBy || []
+        if (!msg.readBy.includes(data.readBy)) {
+          msg.readBy.push(data.readBy)
+        }
       }
     })
   }
@@ -44,6 +83,7 @@ export const useChatState = () => {
     activeConversation,
     messages,
     isTyping,
+    onlineUsers,
     initSocket
   }
 }

@@ -7,4 +7,7 @@ export const referrals_api = {
   getMyReferrals: () => {
     return GATEWAY_ENDPOINT_WITH_AUTH.get("/referrals/me");
   },
+  deleteReferral: (id: string) => {
+    return GATEWAY_ENDPOINT_WITH_AUTH.delete(`/referrals/${id}`);
+  },
 };

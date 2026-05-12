@@ -1,7 +1,12 @@
 <template>
   <div>
-    <NuxtPage />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
     <LoadingOverlay :active="isActive" />
+    <ToastContainer />
+    <ConfirmModal />
+    <ChatWidget />
   </div>
 </template>
 
@@ -17,6 +22,7 @@ onMounted(() => {
 
 <style>
 body {
-    font-family: 'Onest', sans-serif;
+    font-family: 'Inter', sans-serif;
+    @apply bg-gray-50;
 }
 </style>

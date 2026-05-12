@@ -1,20 +1,22 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-gray-50">
-    <div v-if="signupData && signupErrors" class="w-full max-w-md space-y-8 bg-white p-10 rounded-[2.5rem] shadow-xl shadow-gray-200/50">
+  <div class="min-h-screen flex flex-col items-center justify-center px-4 md:px-6 py-10 md:py-12 bg-white font-sans">
+    <div class="w-full max-w-md space-y-10">
       <div class="text-center">
-        <img src="@/assets/images/logo.png" alt="CampusLink" class="h-20 w-20 mx-auto mb-6 object-contain" />
-        <h1 class="text-3xl font-black text-dark-900 tracking-tight">Create Account</h1>
-        <p class="mt-2 text-dark-400 font-medium">Join the CampusLink network today.</p>
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <GraduationCap class="text-white w-7 h-7" />
+        </div>
+        <h1 class="text-xl font-bold text-gray-900">Create your account</h1>
+        <p class="mt-2 text-sm text-gray-400 font-medium">Join CampusLink and start earning today</p>
       </div>
 
-      <form @submit.prevent="handleSignup" class="mt-8 space-y-5">
+      <form @submit.prevent="handleSignup" class="space-y-5">
         <div class="space-y-4">
           <AnimatedInput 
-            label="Full Name"
+            label="Full name"
             v-model="signupData.name"
             type="text"
             required
-            placeholder="John Doe"
+            placeholder="e.g. John Doe"
             :error-message="signupErrors.name"
             :show-error="!!signupErrors.name"
           />
@@ -23,12 +25,12 @@
             v-model="signupData.email"
             type="email"
             required
-            placeholder="you@campus.edu"
+            placeholder="you@email.com"
             :error-message="signupErrors.email"
             :show-error="!!signupErrors.email"
           />
           <AnimatedInput 
-            label="Phone Number"
+            label="Phone number"
             v-model="signupData.phone"
             type="tel"
             required
@@ -37,11 +39,11 @@
             :show-error="!!signupErrors.phone"
           />
           <SelectInput 
-            label="Select Campus"
+            label="Your campus"
             v-model="signupData.campus"
             :options="campusOptions"
             required
-            placeholder="Choose your campus"
+            placeholder="Select your campus"
             :error-message="signupErrors.campus"
             :show-error="!!signupErrors.campus"
           />
@@ -50,29 +52,27 @@
             v-model="signupData.password"
             type="password"
             required
-            placeholder="••••••••"
+            placeholder="At least 6 characters"
             :error-message="signupErrors.password"
             :show-error="!!signupErrors.password"
           />
         </div>
 
-        <div>
+        <div class="pt-2">
           <button 
             type="submit" 
             :disabled="loading || !isFormValid" 
-            class="btn-primary w-full flex justify-center py-4 rounded-2xl text-lg font-bold shadow-lg shadow-primary-600/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full py-4 bg-black text-white rounded-2xl flex justify-center items-center gap-3 text-sm font-bold transition-all hover:bg-gray-800 disabled:opacity-50"
           >
-            <template v-if="loading">
-              <Icon name="ph:spinner-bold" class="animate-spin text-2xl" />
-            </template>
-            <template v-else>Create Account</template>
+            <Loader2 v-if="loading" class="animate-spin w-5 h-5" />
+            <template v-else>Create account</template>
           </button>
         </div>
       </form>
 
-      <p class="text-center text-sm text-dark-500">
+      <p class="text-center text-sm text-gray-500 font-medium">
         Already have an account?
-        <NuxtLink to="/login" class="font-bold text-primary-600 hover:text-primary-500 underline decoration-2 underline-offset-4">Login here</NuxtLink>
+        <NuxtLink to="/login" class="font-bold text-black hover:underline underline-offset-4 ml-1">Sign in</NuxtLink>
       </p>
     </div>
   </div>
@@ -80,6 +80,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { GraduationCap, Loader2 } from 'lucide-vue-next'
 import AnimatedInput from '@/components/ui/AnimatedInput.vue'
 import SelectInput from '@/components/ui/SelectInput.vue'
 
@@ -99,14 +100,13 @@ const signupData = ref({
 const signupErrors = ref({
   name: '',
   email: '',
-  phone: '',
-  campus: '',
   password: ''
 })
 
 const { signup, loading: signupLoading } = useSignup()
 const { campuses, fetchCampuses } = useFetchCampuses()
 const { showLoading, hideLoading } = useGlobalLoading()
+const { showToast } = useCustomToast()
 
 const campusOptions = computed(() => {
   return campuses.value.map((c: any) => ({
@@ -123,18 +123,12 @@ watch(() => signupData.value.name, (val) => {
 
 watch(() => signupData.value.email, (val) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (val.length > 0 && !emailRegex.test(val)) signupErrors.value.email = 'Please enter a valid email address'
+  if (val.length > 0 && !emailRegex.test(val)) signupErrors.value.email = 'Please enter a valid email'
   else signupErrors.value.email = ''
 })
 
-watch(() => signupData.value.phone, (val) => {
-  const phoneRegex = /^[0-9]{11}$/
-  if (val.length > 0 && !phoneRegex.test(val)) signupErrors.value.phone = 'Please enter a valid 11-digit phone number'
-  else signupErrors.value.phone = ''
-})
-
 watch(() => signupData.value.password, (val) => {
-  if (val.length > 0 && val.length < 6) signupErrors.value.password = 'Password must be at least 6 characters'
+  if (val.length > 0 && val.length < 6) signupErrors.value.password = 'Must be at least 6 characters'
   else signupErrors.value.password = ''
 })
 
@@ -146,7 +140,6 @@ const isFormValid = computed(() => {
          signupData.value.password && 
          !signupErrors.value.name && 
          !signupErrors.value.email && 
-         !signupErrors.value.phone && 
          !signupErrors.value.password
 })
 
@@ -154,17 +147,35 @@ const loading = computed(() => signupLoading.value)
 
 onMounted(async () => {
   showLoading()
-  await fetchCampuses()
-  hideLoading()
+  try {
+    await fetchCampuses()
+  } finally {
+    hideLoading()
+  }
 })
 
 const handleSignup = async () => {
   if (!isFormValid.value) return
   
   showLoading()
-  const res = await signup(signupData.value)
-  hideLoading()
-  
-  if (res) navigateTo('/')
+  try {
+    const res = await signup(signupData.value)
+    if (res) {
+      showToast({
+        title: 'Account created!',
+        message: 'Welcome to CampusLink. Let\'s get started.',
+        toastType: 'success'
+      })
+      navigateTo('/dashboard')
+    }
+  } catch (err: any) {
+    showToast({
+      title: 'Signup failed',
+      message: err?.data?.message || 'Something went wrong. Please try again.',
+      toastType: 'error'
+    })
+  } finally {
+    hideLoading()
+  }
 }
 </script>

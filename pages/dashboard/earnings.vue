@@ -1,82 +1,118 @@
 <template>
-  <div class="px-4 py-8 space-y-10 max-w-screen-xl mx-auto">
-    <div>
-      <h1 class="text-3xl font-bold text-dark-900 tracking-tight">Your earnings</h1>
-      <p class="text-dark-500 font-medium">Track your commissions and successful referrals.</p>
-    </div>
+  <div class="space-y-10 py-6">
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Financial Hub</h1>
+        <p class="text-gray-500 font-medium text-sm mt-1">Monitor your performance and manage payouts</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button @click="navigateTo('/dashboard/withdrawals/new')" class="px-6 py-2.5 bg-black text-white rounded-xl font-semibold text-xs shadow-md hover:bg-gray-900 transition-all flex items-center gap-2">
+          <Icon name="ArrowUpRight" size="18" />
+          Withdraw Assets
+        </button>
+        <button @click="navigateTo('/dashboard/withdrawals')" class="px-6 py-2.5 bg-white text-gray-900 border border-gray-200 rounded-xl font-semibold text-xs hover:bg-gray-50 transition-all flex items-center gap-2">
+          <Icon name="History" size="18" />
+          Audit Log
+        </button>
+      </div>
+    </header>
 
-    <!-- Wallet Balance -->
+    <!-- Metrics Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="md:col-span-2 bg-dark-900 rounded-[40px] p-10 text-white space-y-8 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        <div class="space-y-1">
-          <p class="text-[10px] font-bold tracking-[0.2em] opacity-60">Available for withdrawal</p>
-          <h2 class="text-5xl font-bold tracking-tighter">₦24,500.00</h2>
+      <div class="bg-gray-900 rounded-2xl p-8 text-white space-y-6 shadow-xl relative overflow-hidden lg:col-span-2">
+        <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+        <div class="space-y-2 relative z-10">
+          <p class="text-[11px] font-semibold text-white/40 uppercase tracking-wider">Capital Reserve</p>
+          <div v-if="loadingSummary" class="h-10 w-48 bg-white/10 animate-pulse rounded-xl"></div>
+          <h2 v-else class="text-5xl font-bold tracking-tight">₦{{ summary?.walletBalance?.toLocaleString() || '0.00' }}</h2>
         </div>
-        <div class="flex gap-4">
-           <button @click="navigateTo('/dashboard/withdrawals/new')" class="px-8 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-sm hover:bg-emerald-600 transition-all">Withdraw to bank</button>
-           <button class="px-8 py-4 bg-white/10 text-white rounded-2xl font-bold text-sm hover:bg-white/20 transition-all border border-white/10">History</button>
+        <div class="pt-4 flex items-center gap-3 relative z-10">
+           <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+           <span class="text-xs font-medium text-white/60">Verified for immediate payout</span>
         </div>
       </div>
       
-      <div class="bg-white border border-dark-100 rounded-[40px] p-10 flex flex-col justify-center">
-        <p class="text-[10px] font-bold tracking-[0.2em] text-dark-400 mb-2">Total earned</p>
-        <h3 class="text-4xl font-bold text-dark-900 tracking-tighter">₦86,200.00</h3>
-        <div class="mt-4 flex items-center gap-2 text-emerald-600 font-bold text-sm">
-          <Icon name="ph:arrow-trend-up-bold" />
-          <span>+₦12k this week</span>
+      <div class="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm flex flex-col justify-center">
+        <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Gross Revenue</p>
+        <div v-if="loadingSummary" class="h-8 w-32 bg-gray-100 animate-pulse rounded-lg"></div>
+        <h3 v-else class="text-3xl font-bold text-gray-900 tracking-tight">₦{{ summary?.totalEarnings?.toLocaleString() || '0.00' }}</h3>
+        <div class="mt-4 flex items-center gap-2 text-green-600 text-[11px] font-bold">
+          <Icon name="TrendingUp" size="14" />
+          <span>Active Performance</span>
         </div>
       </div>
     </div>
 
-    <!-- Earnings Breakdown -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div class="glass-card bg-white border border-dark-100 rounded-[40px] p-10">
-        <h3 class="text-xl font-bold text-dark-900 mb-8">Recent commissions</h3>
-        <div class="space-y-6">
-          <div v-for="i in 4" :key="i" class="flex items-center gap-4">
-            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl">
-              <Icon name="ph:money-wavy-duotone" />
-            </div>
-            <div class="flex-1">
-              <h4 class="font-bold text-dark-900">Sale #{{1204 - i}}</h4>
-              <p class="text-xs text-dark-400 font-medium">From Nike Sneakers • 2 hours ago</p>
-            </div>
-            <div class="text-right">
-              <p class="font-bold text-emerald-600">+₦1,200</p>
-              <p class="text-[10px] font-bold text-dark-300">Paid</p>
-            </div>
-          </div>
+    <!-- Recent Commissions -->
+    <section id="history" class="space-y-6">
+      <div class="flex items-center justify-between px-1">
+        <h3 class="text-lg font-bold text-gray-900 tracking-tight">Recent Commissions</h3>
+        <button v-if="earnings.length > 0" class="text-xs font-semibold text-gray-400 hover:text-black transition-colors uppercase tracking-wider">Download CSV</button>
+      </div>
+
+      <div v-if="loadingHistory" class="space-y-4">
+        <div v-for="i in 5" :key="i" class="h-20 bg-gray-50 border border-gray-100 rounded-2xl animate-pulse"></div>
+      </div>
+
+      <div v-else-if="earnings.length > 0" class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50/50 border-b border-gray-100">
+                <th class="px-8 py-5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Source</th>
+                <th class="px-8 py-5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Commission</th>
+                <th class="px-8 py-5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="px-8 py-5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr v-for="item in earnings" :key="item._id" class="group hover:bg-gray-50/50 transition-colors">
+                <td class="px-8 py-6">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-black group-hover:text-white transition-colors">
+                      <Icon name="DollarSign" size="18" />
+                    </div>
+                    <p class="text-sm font-semibold text-gray-900 group-hover:text-black">{{ item.source || 'Sale Commission' }}</p>
+                  </div>
+                </td>
+                <td class="px-8 py-6">
+                  <p class="text-sm font-bold text-gray-900">₦{{ item.amount?.toLocaleString() }}</p>
+                </td>
+                <td class="px-8 py-6">
+                  <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-600">
+                    Credited
+                  </span>
+                </td>
+                <td class="px-8 py-6">
+                  <p class="text-xs font-medium text-gray-400">{{ new Date(item.createdAt).toLocaleDateString() }}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div class="glass-card bg-white border border-dark-100 rounded-[40px] p-10">
-        <h3 class="text-xl font-bold text-dark-900 mb-8">Referral performance</h3>
-        <div class="space-y-6">
-          <div v-for="i in 4" :key="i" class="flex items-center gap-4">
-            <div class="w-14 h-14 bg-dark-50 text-dark-400 rounded-2xl flex items-center justify-center text-2xl">
-              <Icon name="ph:link-bold" />
-            </div>
-            <div class="flex-1">
-              <h4 class="font-bold text-dark-900">Product link #{{i}}</h4>
-              <p class="text-xs text-dark-400 font-medium">{{80 - (i*10)}} clicks • {{5 - i}} sales</p>
-            </div>
-            <div class="text-right">
-              <p class="font-bold text-dark-900">₦{{(5000 - (i*500)).toLocaleString()}}</p>
-              <div class="w-20 h-1.5 bg-dark-50 rounded-full mt-2">
-                <div class="h-full bg-emerald-500 rounded-full" :style="{ width: (100 - (i*20)) + '%' }"></div>
-              </div>
-            </div>
-          </div>
+      <div v-else class="py-24 flex flex-col items-center justify-center text-center bg-white border border-gray-100 rounded-3xl shadow-sm">
+        <div class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 border border-gray-100 text-gray-300">
+           <Icon name="Wallet" size="32" />
         </div>
+        <h3 class="text-xl font-bold text-gray-900">No Earnings Recorded</h3>
+        <p class="text-gray-400 text-sm mt-2 max-w-xs mx-auto">Your commissions from product sales will appear here. Start promoting to earn!</p>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
+const { summary, loading: loadingSummary, fetchSummary } = useFetchEarningsSummary()
+const { earnings, loading: loadingHistory, fetchEarnings } = useFetchEarningsHistory()
+
+onMounted(() => {
+  fetchSummary()
+  fetchEarnings()
+})
+
 definePageMeta({
   layout: 'default'
 })
-const { user } = useUser()
 </script>

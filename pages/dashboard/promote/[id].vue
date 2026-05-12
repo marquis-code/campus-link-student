@@ -1,125 +1,128 @@
 <template>
-  <div class="px-6 py-8 max-w-screen-md mx-auto space-y-8">
+  <div class="max-w-3xl mx-auto space-y-10 py-6 pb-24">
     <header class="flex items-center gap-4">
-      <button @click="$router.back()" class="w-10 h-10 glass-card flex items-center justify-center">
-        <Icon name="ph:arrow-left-bold" />
+      <button @click="$router.back()" class="w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center hover:bg-gray-50 transition-all shadow-sm group">
+        <Icon name="ArrowLeft" size="18" class="text-gray-400 group-hover:text-black transition-colors" />
       </button>
-      <h1 class="text-2xl font-bold text-dark-900 tracking-tight">Promote & earn</h1>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Promote Asset</h1>
+        <p class="text-xs font-medium text-gray-500 mt-1">Generate marketing assets and track conversions</p>
+      </div>
     </header>
 
-    <div v-if="loading" class="animate-pulse space-y-6">
-      <div class="h-40 bg-dark-100 rounded-3xl"></div>
-      <div class="h-60 bg-dark-100 rounded-3xl"></div>
+    <div v-if="loading" class="animate-pulse space-y-8">
+      <div class="h-40 bg-gray-100 rounded-2xl"></div>
+      <div class="h-64 bg-gray-100 rounded-2xl"></div>
     </div>
 
-    <div v-else-if="product && referral" class="space-y-8">
-      <!-- Product Summary -->
-      <div class="glass-card p-4 flex gap-4 items-center">
-        <img :src="product.images?.[0] || 'https://via.placeholder.com/200'" class="w-20 h-20 rounded-2xl object-cover" />
-        <div>
-          <h3 class="font-bold text-dark-900">{{ product.name }}</h3>
-          <p class="text-sm font-bold text-emerald-600">Earnings: ₦{{ product.commissionAmount?.toLocaleString() }} / sale</p>
+    <div v-else-if="product && referral" class="space-y-10">
+      <!-- Product Showcase -->
+      <div class="bg-white border border-gray-100 p-6 rounded-2xl flex flex-col md:flex-row gap-8 items-center shadow-sm">
+        <div class="w-32 h-32 rounded-xl overflow-hidden border border-gray-100 shrink-0">
+          <img :src="product.images?.[0] || 'https://via.placeholder.com/400'" class="w-full h-full object-cover" />
+        </div>
+        <div class="flex-1 text-center md:text-left space-y-3">
+          <div class="flex flex-wrap justify-center md:justify-start gap-2">
+            <span class="px-2.5 py-1 bg-gray-900 text-white text-[10px] font-bold rounded-md uppercase tracking-wider">{{ product.category?.name || 'Asset' }}</span>
+            <span class="px-2.5 py-1 bg-green-50 text-green-600 text-[10px] font-bold rounded-md uppercase tracking-wider">Active Inventory</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 tracking-tight">{{ product.name }}</h3>
+          <div class="flex items-center justify-center md:justify-start gap-6 pt-1">
+             <div>
+                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Sale Commission</p>
+                <p class="text-lg font-bold text-green-600">₦{{ product.commissionAmount?.toLocaleString() }}</p>
+             </div>
+             <div class="w-px h-8 bg-gray-100"></div>
+             <div>
+                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Retail Price</p>
+                <p class="text-lg font-bold text-gray-900">₦{{ product.price?.toLocaleString() }}</p>
+             </div>
+          </div>
         </div>
       </div>
 
       <!-- Referral Link -->
-      <div class="space-y-3">
-        <AnimatedInput 
-          label="Your unique link"
-          :model-value="referralLink"
-          readonly
-        >
-          <template #right>
-            <button @click="copyLink" class="px-4 py-2 bg-primary-600 text-white text-xs font-bold rounded-lg hover:bg-primary-700 transition-colors mr-2">
-              {{ copied ? 'Copied!' : 'Copy' }}
+      <div class="space-y-4">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Unique Asset Link</h4>
+        <div class="bg-gray-900 p-6 rounded-2xl shadow-lg relative overflow-hidden">
+          <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+          <div class="flex flex-col md:flex-row gap-4 items-center relative z-10">
+            <div class="flex-1 w-full bg-white/10 border border-white/10 p-3.5 rounded-xl text-white font-mono text-xs truncate">
+              {{ referralLink }}
+            </div>
+            <button @click="copyLink" class="w-full md:w-auto px-6 py-3 bg-white text-black text-xs font-bold rounded-xl hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
+              <Icon :name="copied ? 'Check' : 'Copy'" size="16" />
+              {{ copied ? 'Copied' : 'Copy Link' }}
             </button>
-          </template>
-        </AnimatedInput>
+          </div>
+        </div>
       </div>
 
-      <!-- AI Marketing Copy -->
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <label class="text-sm font-bold text-dark-500 tracking-wider ml-1">AI marketing copy</label>
-          <button @click="generateCopy" :disabled="generatingCopy" class="text-primary-600 font-bold text-sm flex items-center gap-1">
-            <Icon name="ph:arrows-clockwise-bold" :class="{ 'animate-spin': generatingCopy }" />
+      <!-- AI Marketing -->
+      <div class="space-y-6">
+        <div class="flex items-center justify-between px-1">
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">AI Marketing Engine</h4>
+          <button @click="handleGenerateCopy" :disabled="generatingCopy" class="text-[10px] font-bold text-gray-900 bg-gray-100 px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-gray-200 transition-colors">
+            <Icon name="RefreshCw" :class="{ 'animate-spin': generatingCopy }" size="14" />
             Regenerate
           </button>
         </div>
 
-        <div v-if="copy" class="space-y-6">
-          <!-- WhatsApp Caption -->
-          <div class="glass-card overflow-hidden">
-            <div class="bg-emerald-50 px-5 py-3 flex items-center justify-between border-b border-emerald-100">
-              <span class="text-emerald-700 font-bold text-xs tracking-tight flex items-center gap-2">
-                <Icon name="ph:whatsapp-logo-fill" class="text-lg" /> WhatsApp caption
+        <div v-if="copy" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+            <div class="px-5 py-3 bg-green-50 flex items-center justify-between border-b border-green-100">
+              <span class="text-green-700 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+                <Icon name="MessageCircle" size="14" /> WhatsApp Status
               </span>
-              <button @click="shareOnWhatsapp" class="text-emerald-700 font-bold text-xs hover:underline">Share now</button>
+              <button @click="shareOnWhatsapp" class="text-green-600 font-bold text-[10px] uppercase tracking-wider hover:underline">Share</button>
             </div>
-            <div class="p-5">
-              <p class="text-sm text-dark-700 whitespace-pre-wrap leading-relaxed">{{ copy.whatsappCaption }}</p>
-              <div class="mt-4 p-3 bg-dark-50 rounded-xl border border-dashed border-dark-200 text-xs text-dark-400 font-mono">
-                [Your referral link will be added at the end]
-              </div>
+            <div class="p-6 flex-1">
+              <p class="text-sm text-gray-600 leading-relaxed">{{ copy.whatsappCaption }}</p>
             </div>
           </div>
 
-          <!-- Marketing Text -->
-          <div class="glass-card overflow-hidden">
-            <div class="bg-primary-50 px-5 py-3 flex items-center justify-between border-b border-primary-100">
-              <span class="text-primary-700 font-bold text-xs tracking-tight flex items-center gap-2">
-                <Icon name="ph:megaphone-duotone" class="text-lg" /> Social media text
+          <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+            <div class="px-5 py-3 bg-gray-50 flex items-center justify-between border-b border-gray-100">
+              <span class="text-gray-600 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+                <Icon name="Megaphone" size="14" /> Direct Message
               </span>
-              <button @click="copyText(copy.marketingText)" class="text-primary-700 font-bold text-xs hover:underline">Copy text</button>
+              <button @click="copyText(copy.marketingText)" class="text-black font-bold text-[10px] uppercase tracking-wider hover:underline">Copy All</button>
             </div>
-            <div class="p-5">
-              <p class="text-sm text-dark-700 whitespace-pre-wrap leading-relaxed">{{ copy.marketingText }}</p>
+            <div class="p-6 flex-1">
+              <p class="text-sm text-gray-600 leading-relaxed">{{ copy.marketingText }}</p>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="pt-4 flex flex-col gap-4 pb-12">
-        <button @click="shareOnWhatsapp" class="btn-primary bg-emerald-600 flex items-center justify-center gap-3 py-5 text-lg font-bold">
-          <Icon name="ph:whatsapp-logo-fill" class="text-2xl" />
-          Post to WhatsApp status
-        </button>
-        <p class="text-center text-dark-400 text-xs px-10">
-          Tip: Posting on WhatsApp status is the most effective way to earn on campus!
-        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import AnimatedInput from '@/components/ui/AnimatedInput.vue'
-
 const route = useRoute()
 const { $api } = useNuxtApp()
 const config = useRuntimeConfig()
 const { fetchProduct, loading } = useFetchProduct()
 const { generateCopy, loading: generatingCopy } = useAiCopy()
 
-const product = ref(null)
-const referral = ref(null)
-const copy = ref(null)
+const product = ref<any>(null)
+const referral = ref<any>(null)
+const copy = ref<any>(null)
 const copied = ref(false)
 
 const referralLink = computed(() => {
   if (!referral.value) return ''
-  return `${config.public.appUrl}/products/${product.value?._id}?ref=${referral.value.referralCode}`
+  return `${config.public.appUrl}/products/${product.value?._id}?ref=${referral.value._id}`
 })
 
 const fetchData = async () => {
   try {
     const [p, r] = await Promise.all([
-      fetchProduct(route.params.id),
-      $api.referrals.createReferral(route.params.id)
+      fetchProduct(route.params.id as string),
+      $api.referrals.createReferral(route.params.id as string)
     ])
     product.value = p
-    referral.value = r
+    referral.value = r.data
     await handleGenerateCopy()
   } catch (e) {
     console.error('Failed to initialize promotion')
@@ -141,15 +144,26 @@ const copyLink = () => {
   setTimeout(() => copied.value = false, 2000)
 }
 
-const copyText = (text) => {
+const { showToast } = useCustomToast()
+
+const copyText = (text: string) => {
   navigator.clipboard.writeText(`${text}\n\nOrder here: ${referralLink.value}`)
-  alert('Text copied!')
+  showToast({
+    title: 'Copied',
+    message: 'Marketing text copied to clipboard!',
+    toastType: 'success'
+  })
 }
 
 const shareOnWhatsapp = () => {
+  if (!copy.value) return
   const text = `${copy.value.whatsappCaption}\n\nOrder here: ${referralLink.value}`
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
 }
 
 onMounted(fetchData)
+
+definePageMeta({
+  layout: 'default'
+})
 </script>

@@ -58,7 +58,7 @@ export default defineNuxtConfig({
     },
   },
   devServer: {
-    port: 3001,
+    port: 3002,
     host: 'localhost',
   },
   // experimental.externalVue is REMOVED — do not include it

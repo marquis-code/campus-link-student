@@ -4,64 +4,60 @@
 
 html,
 body {
-  font-family: 'Onest', sans-serif;
+  font-family: 'Inter', 'Onest', sans-serif;
+  background-color: #ffffff;
 }
 
 * {
-  font-family: 'Onest', sans-serif;
-}
-
-h1 {
-  font-family: 'Onest', sans-serif;
-  font-weight: bold;
+  font-family: 'Inter', 'Onest', sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-dark-50 text-dark-900 font-sans;
+    @apply bg-white text-gray-900 font-sans;
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl;
-  }
-  
   .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply px-6 py-3 bg-black text-white font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none hover:bg-gray-800;
+  }
+  @media (max-width: 640px) {
+    .btn-primary { @apply py-2.5 px-5 text-sm; }
   }
   
   .btn-secondary {
-    @apply px-6 py-3 bg-white text-dark-900 border border-dark-200 font-semibold rounded-xl transition-all hover:bg-dark-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply px-6 py-3 bg-white text-gray-900 border border-gray-200 font-semibold rounded-xl transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  @media (max-width: 640px) {
+    .btn-secondary { @apply py-2.5 px-5 text-sm; }
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-white border border-dark-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all;
+    @apply w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-1 focus:ring-black focus:border-black outline-none transition-all text-sm;
+  }
+  
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl overflow-hidden;
   }
 }
 
 .page-enter-active,
 .page-leave-active {
-  transition: all 0.2s;
+  transition: opacity 0.15s ease;
 }
 .page-enter-from,
 .page-leave-to {
   opacity: 0;
-  filter: blur(1rem);
 }
-
-
 
 .hide-scrollbar {
   scrollbar-width: none;
-  /* Firefox */
   -ms-overflow-style: none;
-  /* IE/Edge */
 }
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
-  /* Chrome/Safari */
 }
 
 input::-webkit-outer-spin-button,
@@ -70,22 +66,18 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
-
 
 .custom-checkbox {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   width: 1.25rem;
-  /* Reduced from 2.5rem */
   height: 1.25rem;
-  /* Reduced from 2.5rem */
-  border: 2px solid #d1d5db;
+  border: 1px solid #d1d5db;
   border-radius: 0.375rem;
-  /* Reduced from 0.75rem */
   background-color: white;
   cursor: pointer;
   position: relative;
@@ -93,8 +85,8 @@ input[type=number] {
 }
 
 .custom-checkbox:checked {
-  background-color: #192151;
-  border-color: #192151;
+  background-color: black;
+  border-color: black;
 }
 
 .custom-checkbox:checked::after {
@@ -104,61 +96,15 @@ input[type=number] {
   top: 50%;
   transform: translate(-50%, -50%) rotate(45deg);
   width: 5px;
-  /* Increased from 3px */
   height: 9px;
-  /* Increased from 6px */
   border: solid white;
   border-width: 0 2.5px 2.5px 0;
-  /* Increased from 2px */
 }
 
 .custom-checkbox:hover {
-  border-color: #192151;
+  border-color: black;
 }
 
 .custom-checkbox:focus {
   outline: none;
-}
-
-.custom-input {
-  @apply w-full px-4 pl-10 py-4 text-sm outline-none focus:border focus:border-[#192151] rounded-xl bg-[#1A1A1B09] focus:bg-white pr-10
-}
-
-/* ===== Zendesk Chat Widget – Mobile Fix =====
-   The Zendesk launcher iframe covers store cards on mobile.
-   Hide the floating bubble on small screens; users can still
-   open chat from the in-app Help Center / Chat buttons.        */
-@media (max-width: 768px) {
-  /* Zendesk Web Widget (Classic) launcher */
-  iframe#launcher,
-  iframe[title="Button to launch messaging window"],
-  iframe[title="Messaging window"],
-  iframe[title="Number of unread messages"] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-
-  /* Zendesk Messenger launcher */
-  div[data-product="messenger"],
-  div[aria-label="Open messaging window"],
-  #Embed,
-  .zEWidget-launcher {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-}
-
-/* On tablets / desktops keep the widget but bump it above any
-   sticky footer or bottom-nav that might exist (≥769px).      */
-@media (min-width: 769px) {
-  iframe#launcher,
-  iframe[title="Button to launch messaging window"] {
-    bottom: 24px !important;
-    right: 24px !important;
-    z-index: 999 !important;   /* below modals (z-50 = 50) but above page content */
-  }
 }
