@@ -34,9 +34,9 @@
         <div class="flex items-center justify-between px-1">
           <label class="flex items-center gap-2.5 cursor-pointer group">
             <input type="checkbox" class="custom-checkbox" />
-            <span class="text-xs font-medium text-gray-400 group-hover:text-black transition-colors">Remember me</span>
+            <span class="text-sm font-medium text-gray-400 group-hover:text-black transition-colors">Remember me</span>
           </label>
-          <NuxtLink to="/forgot-password" class="text-xs font-bold text-black hover:underline underline-offset-4">Forgot password?</NuxtLink>
+          <NuxtLink to="/forgot-password" class="text-sm font-bold text-black hover:underline underline-offset-4">Forgot password?</NuxtLink>
         </div>
 
         <button 
@@ -50,7 +50,7 @@
 
         <div class="relative py-2">
           <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-100"></div></div>
-          <div class="relative flex justify-center text-xs font-medium"><span class="bg-white px-4 text-gray-300">or</span></div>
+          <div class="relative flex justify-center text-sm font-medium"><span class="bg-white px-4 text-gray-300">or</span></div>
         </div>
 
         <button @click="handleGoogleLogin" type="button" class="w-full flex items-center justify-center gap-3 py-4 border border-gray-100 rounded-2xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all">
@@ -125,7 +125,7 @@ const handleLogin = async () => {
         message: 'Taking you to your dashboard...',
         toastType: 'success'
       })
-      navigateTo('/dashboard')
+      navigateTo('/dashboard', { replace: true })
     }
   } catch (e) {
     showToast({
@@ -144,7 +144,7 @@ const handleGoogleLogin = async () => {
     if (idToken) {
       showLoading()
       const res = await socialLogin(idToken)
-      if (res) navigateTo('/dashboard')
+      if (res) navigateTo('/dashboard', { replace: true })
     }
   } catch (e) {
     showToast({

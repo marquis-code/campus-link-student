@@ -1,7 +1,7 @@
 import { defineNuxtConfig } from "nuxt/config";
 
 export default defineNuxtConfig({
-  ssr: false,
+  ssr: true,
   compatibilityDate: '2024-11-01',
   devtools: { enabled: false },
   modules: ['@nuxtjs/tailwindcss'],
@@ -30,6 +30,7 @@ export default defineNuxtConfig({
       hmr: {
         protocol: 'ws',
         host: 'localhost',
+        port: 3002,
       }
     }
   },
@@ -48,7 +49,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.VITE_BASE_URL || 'http://localhost:3000/api',
-      appUrl: process.env.APP_URL || 'http://localhost:3001',
+      appUrl: process.env.APP_URL || 'http://localhost:3002',
       firebaseApiKey: process.env.VITE_FIREBASE_API_KEY,
       firebaseAuthDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
       firebaseProjectId: process.env.VITE_FIREBASE_PROJECT_ID,
@@ -61,5 +62,6 @@ export default defineNuxtConfig({
     port: 3002,
     host: 'localhost',
   },
+  
   // experimental.externalVue is REMOVED — do not include it
 })

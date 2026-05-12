@@ -41,7 +41,7 @@
                 <div class="flex-1 min-w-0 space-y-1">
                    <p class="text-sm font-bold text-gray-900">{{ notif.title }}</p>
                    <p class="text-xs text-gray-500 leading-relaxed">{{ notif.message }}</p>
-                   <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wider pt-1">{{ formatTime(notif.createdAt) }}</p>
+                   <p class="text-sm font-medium text-gray-400 uppercase tracking-wider pt-1">{{ formatTime(notif.createdAt) }}</p>
                 </div>
                 <div v-if="!notif.isRead" class="w-2 h-2 bg-black rounded-full shrink-0 mt-1"></div>
               </div>

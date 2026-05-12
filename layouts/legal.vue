@@ -14,7 +14,7 @@
     </main>
 
     <footer class="py-12 border-t border-dark-100 text-center">
-      <p class="text-[10px] font-bold text-dark-300 ">© {{ new Date().getFullYear() }} CampusLink Promoter Legal</p>
+      <p class="text-sm font-bold text-dark-300 ">© {{ new Date().getFullYear() }} CampusLink Promoter Legal</p>
     </footer>
   </div>
 </template>

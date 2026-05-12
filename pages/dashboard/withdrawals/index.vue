@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto space-y-10 py-6 pb-24">
+  <div class="container mx-auto space-y-10 py-6 pb-24">
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Payout History</h1>
@@ -46,7 +46,7 @@
 
           <div class="text-left md:text-right space-y-1">
              <p class="text-sm font-bold text-gray-900">{{ new Date(w.createdAt).toLocaleDateString() }}</p>
-             <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Ref: {{ w._id.slice(-8).toUpperCase() }}</p>
+             <p class="text-sm text-gray-400 font-semibold uppercase tracking-wider">Ref: {{ w._id.slice(-8).toUpperCase() }}</p>
           </div>
         </div>
       </div>

@@ -10,7 +10,7 @@
           </div>
           <div class="flex flex-col">
             <span class="text-base font-bold text-gray-900 tracking-tight leading-none">Ambassador</span>
-            <span class="text-[10px] font-medium text-gray-400 mt-1">CampusLink</span>
+            <span class="text-sm font-medium text-gray-400 mt-1">CampusLink</span>
           </div>
         </NuxtLink>
       </div>
@@ -40,7 +40,7 @@
           </div>
           <div class="flex-1 min-w-0">
              <p class="text-xs font-bold text-gray-900 truncate">{{ user?.name || 'Ambassador' }}</p>
-             <p class="text-[10px] text-gray-400 font-medium">Student</p>
+             <p class="text-sm text-gray-400 font-medium">Student</p>
           </div>
         </div>
         <button 
@@ -63,7 +63,7 @@
           </button>
           <div class="flex flex-col">
             <h2 class="text-sm font-bold text-gray-900">{{ currentPageTitle }}</h2>
-            <p class="text-[10px] text-gray-400 font-medium mt-0.5">{{ user?.campus?.name || 'Campus Network' }}</p>
+            <p class="text-sm text-gray-400 font-medium mt-0.5">{{ user?.campus?.name || 'Campus Network' }}</p>
           </div>
         </div>
 

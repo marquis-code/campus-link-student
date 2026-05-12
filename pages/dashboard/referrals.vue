@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-10 py-6 max-w-7xl mx-auto">
+  <div class="space-y-8 py-6 w-full px-4 sm:px-8">
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Campaign Assets</h1>
@@ -7,102 +7,152 @@
       </div>
       <button 
         @click="showCreateModal = true" 
-        class="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-md hover:bg-gray-900 transition-all"
+        class="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl text-xs font-medium shadow-sm hover:bg-black transition-all active:scale-95"
       >
-        <Icon name="Plus" size="18" />
+        <Plus :size="16" />
         New Campaign
       </button>
     </header>
 
-    <!-- Content Area -->
-    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="i in 3" :key="i" class="h-80 bg-gray-50 border border-gray-100 rounded-2xl animate-pulse"></div>
+    <!-- Loading -->
+    <div v-if="loading" class="space-y-3">
+      <div v-for="i in 4" :key="i" class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl animate-pulse">
+        <div class="w-10 h-10 bg-gray-100 rounded-lg shrink-0"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-3 bg-gray-100 rounded w-1/3"></div>
+          <div class="h-2 bg-gray-100 rounded w-1/2"></div>
+        </div>
+        <div class="h-3 bg-gray-100 rounded w-16"></div>
+      </div>
     </div>
 
-    <div v-else-if="referrals.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Active Assets -->
-      <div v-for="ref in referrals" :key="ref._id" class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-gray-300 transition-all flex flex-col group shadow-sm">
-        <div class="p-6 space-y-6 flex-1">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors overflow-hidden">
-              <img v-if="ref.product?.images?.[0]" :src="ref.product.images[0]" class="w-full h-full object-cover" />
-              <Icon v-else name="Package" size="20" />
-            </div>
-            <div class="min-w-0">
-              <h4 class="font-bold text-gray-900 truncate tracking-tight text-base">{{ ref.product?.name || 'Asset' }}</h4>
-              <p class="text-xs font-semibold text-green-600">₦{{ ref.product?.commissionAmount?.toLocaleString() }} / SALE</p>
-            </div>
-          </div>
-          
-          <div class="space-y-2">
-            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider ml-1">Asset Link</p>
-            <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100 group/link">
-              <p class="text-xs font-medium text-gray-500 truncate flex-1 select-all">{{ getReferralLink(ref) }}</p>
-              <button @click="copyLink(ref)" class="p-2 text-gray-400 hover:text-black hover:bg-white rounded-lg transition-all">
-                <Icon :name="copiedId === ref._id ? 'Check' : 'Copy'" size="16" />
-              </button>
+    <!-- Referral List -->
+    <div v-else-if="referrals.length > 0" class="space-y-2">
+      <div 
+        v-for="ref in referrals" 
+        :key="ref._id" 
+        class="bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-200 transition-all group"
+      >
+        <!-- Main row -->
+        <div class="flex items-center gap-4">
+          <!-- Product image -->
+          <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-50 shrink-0">
+            <img v-if="ref.product?.images?.[0]" :src="ref.product.images[0]" class="w-full h-full object-cover" />
+            <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
+              <Package :size="16" />
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div class="p-4 bg-gray-50 border border-gray-100 rounded-xl text-center">
-              <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Engagements</p>
-              <p class="text-xl font-bold text-gray-900">{{ ref.clicks || 0 }}</p>
+          <!-- Product info -->
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-semibold text-gray-900 truncate">{{ ref.product?.name || 'Asset' }}</h4>
+            <p class="text-xs text-gray-400 mt-0.5">₦{{ ref.product?.commissionAmount?.toLocaleString() }} per sale</p>
+          </div>
+
+          <!-- Stats -->
+          <div class="hidden sm:flex items-center gap-5 shrink-0">
+            <div class="text-center">
+              <p class="text-xs font-semibold text-gray-900">{{ ref.clicks || 0 }}</p>
+              <p class="text-sm text-gray-400">Clicks</p>
             </div>
-            <div class="p-4 bg-gray-900 text-white border border-gray-800 rounded-xl text-center">
-              <p class="text-[10px] font-semibold text-white/40 uppercase tracking-wider mb-1">Conversions</p>
-              <p class="text-xl font-bold text-white">{{ ref.salesCount || 0 }}</p>
+            <div class="text-center">
+              <p class="text-xs font-semibold text-gray-900">{{ ref.salesCount || 0 }}</p>
+              <p class="text-sm text-gray-400">Sales</p>
             </div>
           </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button 
+              @click="copyLink(ref)" 
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all"
+              :title="copiedId === ref._id ? 'Copied!' : 'Copy link'"
+            >
+              <component :is="copiedId === ref._id ? Check : CopyIcon" :size="14" :class="copiedId === ref._id ? 'text-emerald-500' : ''" />
+            </button>
+            <button 
+              @click="handlePromote(ref)" 
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all"
+              title="Promote"
+            >
+              <ExternalLink :size="14" />
+            </button>
+            <button 
+              @click="handleDelete(ref)" 
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+              title="Archive"
+            >
+              <Trash2 :size="14" />
+            </button>
+          </div>
         </div>
-        
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center mt-auto">
-           <div class="flex items-center gap-2">
-             <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-             <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Active</span>
-           </div>
-           <div class="flex items-center gap-3">
-             <NuxtLink :to="`/dashboard/promote/${ref.productId}`" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
-                View Asset <Icon name="ArrowRight" size="14" />
-             </NuxtLink>
-             <div class="w-px h-4 bg-gray-200"></div>
-             <button @click="handleDelete(ref)" class="text-xs font-bold text-red-500 hover:text-red-700 transition-colors">
-                Archive
-             </button>
-           </div>
+
+        <!-- Link row (shown below on mobile, inline on wider) -->
+        <div class="mt-3 flex items-center gap-2 p-2.5 bg-gray-50 rounded-lg">
+          <Link2 :size="12" class="text-gray-300 shrink-0" />
+          <p class="text-sm font-mono text-gray-400 truncate flex-1 select-all">{{ getReferralLink(ref) }}</p>
+          <button @click="copyLink(ref)" class="text-sm font-medium text-gray-500 hover:text-gray-900 shrink-0">
+            {{ copiedId === ref._id ? 'Copied' : 'Copy' }}
+          </button>
+        </div>
+
+        <!-- Mobile stats -->
+        <div class="flex sm:hidden items-center gap-4 mt-3 pt-3 border-t border-gray-50">
+          <div class="flex items-center gap-1.5">
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+            <span class="text-sm text-gray-400">Active</span>
+          </div>
+          <span class="text-sm text-gray-400">{{ ref.clicks || 0 }} clicks</span>
+          <span class="text-sm text-gray-400">{{ ref.salesCount || 0 }} sales</span>
         </div>
       </div>
 
-      <!-- Add New Link Card -->
-      <button @click="showCreateModal = true" class="group h-full bg-white border-2 border-dashed border-gray-100 rounded-2xl p-10 flex flex-col items-center justify-center text-center space-y-4 hover:border-black transition-all min-h-[300px]">
-        <div class="w-14 h-14 bg-gray-50 text-gray-300 rounded-xl flex items-center justify-center text-2xl transition-all group-hover:bg-black group-hover:text-white shadow-sm">
-          <Icon name="Plus" />
-        </div>
-        <div>
-          <h4 class="font-bold text-gray-900 text-base">Expand Portfolio</h4>
-          <p class="text-gray-400 text-xs font-medium mt-1">Find more products to promote</p>
-        </div>
+      <!-- Add new row -->
+      <button 
+        @click="showCreateModal = true" 
+        class="w-full p-4 border border-dashed border-gray-200 rounded-xl flex items-center justify-center gap-2 text-xs font-medium text-gray-400 hover:text-gray-900 hover:border-gray-400 transition-all"
+      >
+        <Plus :size="14" />
+        Add another campaign
       </button>
     </div>
 
     <!-- Empty State -->
-    <div v-else class="py-32 flex flex-col items-center justify-center text-center bg-white border border-gray-100 rounded-3xl shadow-sm">
-      <div class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-8 border border-gray-100 text-gray-200">
-         <Icon name="Megaphone" size="36" />
+    <div v-else class="py-24 flex flex-col items-center justify-center text-center bg-white border border-gray-100 rounded-2xl">
+      <div class="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center mb-6 text-gray-200">
+         <Megaphone :size="28" />
       </div>
-      <h3 class="text-xl font-bold text-gray-900">No Active Campaigns</h3>
-      <p class="text-gray-400 font-medium text-sm mt-2 max-w-sm mx-auto">You haven't generated any referral assets yet. Visit the marketplace to start earning.</p>
-      <button @click="showCreateModal = true" class="mt-8 px-8 py-3 bg-black text-white rounded-xl font-bold text-sm shadow-xl hover:bg-gray-900 transition-all">
-         Create Your First Campaign
+      <h3 class="text-lg font-semibold text-gray-900">No active campaigns</h3>
+      <p class="text-gray-400 font-medium text-sm mt-1.5 max-w-sm mx-auto">Visit the marketplace to start promoting products and earning commissions.</p>
+      <button @click="showCreateModal = true" class="mt-6 px-6 py-2.5 bg-gray-900 text-white rounded-xl font-medium text-xs shadow-sm hover:bg-black transition-all active:scale-95">
+         Create your first campaign
       </button>
     </div>
 
     <CreateCampaignModal v-model="showCreateModal" @created="fetchReferrals" />
+
+    <!-- Promote Drawer -->
+    <PromoteDrawer 
+      :open="promoteDrawerOpen" 
+      :product-id="promoteProductId" 
+      @close="promoteDrawerOpen = false" 
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { 
+  Plus, 
+  Package, 
+  Copy as CopyIcon, 
+  Check, 
+  ExternalLink, 
+  Trash2, 
+  Link2, 
+  Megaphone 
+} from 'lucide-vue-next'
 import CreateCampaignModal from '@/components/referrals/CreateCampaignModal.vue'
+import PromoteDrawer from '@/components/product/PromoteDrawer.vue'
 
 const { referrals, loading, fetchReferrals, removeReferral } = useFetchReferrals()
 const { user } = useUser()
@@ -111,6 +161,8 @@ const { showToast } = useCustomToast()
 
 const copiedId = ref('')
 const showCreateModal = ref(false)
+const promoteDrawerOpen = ref(false)
+const promoteProductId = ref<string | null>(null)
 
 const handleDelete = async (ref: any) => {
   const confirmed = await confirm({
@@ -137,15 +189,25 @@ onMounted(() => {
   fetchReferrals()
 })
 
+const handlePromote = (ref: any) => {
+  promoteProductId.value = ref.product?._id
+  promoteDrawerOpen.value = true
+}
+
 const getReferralLink = (ref: any) => {
   const baseUrl = window.location.origin
-  return `${baseUrl}/p/${ref.productId}?ref=${user.value?._id}`
+  return `${baseUrl}/p/${ref.referralCode}`
 }
 
 const copyLink = (ref: any) => {
   const link = getReferralLink(ref)
   navigator.clipboard.writeText(link)
   copiedId.value = ref._id
+  showToast({
+    title: 'Link Copied',
+    message: 'Referral link saved to clipboard',
+    toastType: 'success'
+  })
   setTimeout(() => {
     copiedId.value = ''
   }, 2000)

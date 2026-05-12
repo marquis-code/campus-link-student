@@ -1,5 +1,10 @@
 <template>
-  <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+  <div 
+    class="fixed z-[100] flex flex-col items-end font-['Inter',sans-serif] transition-all duration-300"
+    :class="[
+      isOpen ? 'inset-0 sm:inset-auto sm:bottom-6 sm:right-6' : 'bottom-6 right-6 pointer-events-none'
+    ]"
+  >
     <!-- Chat Window -->
     <transition
       enter-active-class="transition duration-400 cubic-bezier(0.16, 1, 0.3, 1)"
@@ -11,117 +16,197 @@
     >
       <div 
         v-if="isOpen" 
-        class="mb-4 w-[380px] max-w-[calc(100vw-32px)] h-[520px] max-h-[calc(100vh-100px)] bg-white rounded-[40px] border border-gray-100 shadow-xl overflow-hidden flex flex-col pointer-events-auto relative sm:relative fixed inset-x-4 bottom-24 sm:inset-auto z-50"
-        :class="{'fixed inset-0 !w-full !h-full !max-w-none !max-h-none !rounded-none !bottom-0 !mb-0': isMobile}"
+        class="bg-[#efe7de] shadow-2xl overflow-hidden flex flex-col pointer-events-auto relative z-50 transition-all duration-300 border border-gray-200"
+        :class="[
+          isMobile 
+            ? 'w-full h-full rounded-none m-0 inset-0' 
+            : 'mb-4 w-[400px] h-[640px] rounded-2xl'
+        ]"
       >
-        <!-- Header -->
-        <div class="bg-white/80 backdrop-blur-xl border-b border-gray-50 p-6 flex items-center justify-between z-20 shrink-0">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center border border-primary-100 text-primary-600 shadow-inner">
-               <Headset :size="24" />
+        <!-- Header: WhatsApp Teal -->
+        <div class="bg-[#075e54] p-4 flex items-center justify-between z-20 shrink-0 shadow-md">
+          <div class="flex items-center gap-3">
+            <button @click="isOpen = false" class="sm:hidden text-white mr-1">
+              <ArrowLeft :size="24" />
+            </button>
+            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/10 overflow-hidden relative">
+               <img src="https://ui-avatars.com/api/?name=Support&background=128c7e&color=fff" class="w-full h-full object-cover" />
             </div>
             <div>
-              <h3 class="font-black text-[17px] text-gray-900 tracking-tight leading-none">Support Center</h3>
-              <div class="flex items-center gap-2 mt-2">
-                <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-[10px] text-emerald-600 font-black uppercase tracking-widest">Active Support</span>
-              </div>
+              <h3 class="font-bold text-[16px] text-white tracking-tight leading-tight">CampusLink Support</h3>
+              <p class="text-[11px] text-white/80 font-medium">Active now</p>
             </div>
           </div>
-          <button @click="isOpen = false" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-2xl transition-all text-gray-400 hover:text-gray-900">
-            <X :size="20" stroke-width="3" />
-          </button>
+          <div class="flex items-center gap-4 text-white">
+            <Video :size="20" class="opacity-80 cursor-not-allowed" />
+            <Phone :size="18" class="opacity-80 cursor-not-allowed" />
+            <MoreVertical :size="20" class="opacity-80 cursor-not-allowed" />
+          </div>
+        </div>
+
+        <!-- Image Preview Modal -->
+        <div v-if="selectedImage" class="absolute inset-0 z-[60] bg-black flex flex-col animate-in fade-in zoom-in duration-300">
+          <div class="p-4 flex items-center justify-between text-white">
+            <button @click="cancelImageUpload" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+              <X :size="24" />
+            </button>
+            <div class="flex items-center gap-6">
+              <Crop :size="22" class="opacity-80" />
+              <Smile :size="22" class="opacity-80" />
+              <Type :size="22" class="opacity-80" />
+              <Pencil :size="22" class="opacity-80" />
+            </div>
+          </div>
+          <div class="flex-1 flex items-center justify-center p-4 relative">
+            <img :src="selectedImagePreview" class="max-w-full max-h-[70vh] object-contain shadow-2xl" :class="{'opacity-40 blur-sm': uploadingFile}" />
+            
+            <!-- Upload Loader -->
+            <div v-if="uploadingFile" class="absolute inset-0 flex flex-col items-center justify-center text-white space-y-4">
+              <div class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+              <p class="text-sm font-bold tracking-widest uppercase">Uploading to Cloudinary...</p>
+            </div>
+          </div>
+          <div class="p-4 bg-black/40 backdrop-blur-md">
+            <div class="flex items-end gap-3 bg-white/10 rounded-3xl p-2 border border-white/20">
+              <textarea 
+                v-model="imageCaption" 
+                placeholder="Add a caption..." 
+                rows="1"
+                class="flex-1 bg-transparent border-none focus:ring-0 text-white text-[15px] py-2 px-3 resize-none outline-none font-medium placeholder:text-white/40"
+              ></textarea>
+              <button 
+                @click="confirmImageUpload"
+                class="w-12 h-12 flex items-center justify-center bg-[#00a884] text-white rounded-full shadow-lg"
+              >
+                <Send :size="20" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Guest Form -->
-        <div v-if="showGuestForm && !user" class="flex-1 p-10 flex flex-col items-center justify-center text-center space-y-8 overflow-y-auto">
-           <div class="w-20 h-20 bg-primary-50 rounded-[32px] flex items-center justify-center text-primary-600 mb-2 shadow-inner">
-              <UserPlus :size="40" />
+        <div v-if="showGuestForm && !user" class="flex-1 bg-white p-8 flex flex-col items-center justify-center text-center space-y-6 overflow-y-auto">
+           <div class="w-20 h-20 bg-[#f0f2f5] rounded-full flex items-center justify-center text-[#075e54] mb-2 border-4 border-gray-50">
+              <UserCircle2 :size="48" />
            </div>
-           <div class="space-y-3">
-             <h4 class="font-black text-gray-900 text-2xl tracking-tight">Welcome to Support</h4>
-             <p class="text-sm text-gray-500 font-bold leading-relaxed px-4">Please introduce yourself to start a secure session with our team.</p>
+           <div class="space-y-2">
+             <h4 class="font-bold text-gray-900 text-xl">Support Center</h4>
+             <p class="text-[13px] text-gray-500 font-medium leading-relaxed px-6">Please provide your details to connect with a support agent.</p>
            </div>
            
-           <div class="w-full space-y-5 max-w-sm">
-             <div class="space-y-1.5 text-left">
-               <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Full Name</label>
-               <input v-model="guestInfo.name" type="text" placeholder="e.g. John Doe" class="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-[24px] outline-none text-sm font-bold transition-all placeholder:text-gray-300" />
-             </div>
-             <div class="space-y-1.5 text-left">
-               <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Email Address</label>
-               <input v-model="guestInfo.email" type="email" placeholder="email@example.com" class="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-[24px] outline-none text-sm font-bold transition-all placeholder:text-gray-300" />
-             </div>
-             <div class="space-y-1.5 text-left">
-               <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Phone Number</label>
-               <input v-model="guestInfo.phone" type="tel" placeholder="+234..." class="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-primary-500 focus:bg-white rounded-[24px] outline-none text-sm font-bold transition-all placeholder:text-gray-300" />
-             </div>
+           <div class="w-full space-y-4 max-w-xs">
+             <input v-model="guestInfo.name" type="text" placeholder="Your Name" class="w-full px-4 py-3 bg-[#f0f2f5] border-none rounded-xl outline-none text-sm font-semibold transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-[#075e54]/20" />
+             <input v-model="guestInfo.email" type="email" placeholder="Email Address" class="w-full px-4 py-3 bg-[#f0f2f5] border-none rounded-xl outline-none text-sm font-semibold transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-[#075e54]/20" />
+             <input v-model="guestInfo.phone" type="tel" placeholder="Phone Number" class="w-full px-4 py-3 bg-[#f0f2f5] border-none rounded-xl outline-none text-sm font-semibold transition-all placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-[#075e54]/20" />
+             
              <button 
                @click="submitGuestInfo"
                :disabled="!isGuestInfoValid"
-               class="w-full py-5 bg-primary-600 text-white rounded-[24px] font-black text-sm shadow-xl shadow-primary-200 hover:translate-y-[-2px] active:translate-y-0 transition-all disabled:opacity-50 mt-6"
+               class="w-full py-4 bg-[#075e54] text-white rounded-xl font-bold text-sm shadow-lg shadow-[#075e54]/20 hover:bg-[#128c7e] transition-all disabled:opacity-50 mt-4 uppercase tracking-wider"
              >
-               Start Chatting
+               Start Session
              </button>
            </div>
         </div>
 
         <!-- Messages -->
         <template v-else>
-          <div ref="messageContainer" class="flex-1 overflow-y-auto p-6 space-y-5 bg-[#efe7de]/40 relative">
-            <div class="absolute inset-0 opacity-[0.04] pointer-events-none chat-pattern"></div>
+          <div ref="messageContainer" class="flex-1 overflow-y-auto p-4 space-y-2 bg-[#efe7de] relative no-scrollbar">
+            <div class="absolute inset-0 opacity-[0.06] pointer-events-none chat-pattern"></div>
             
-            <div v-for="msg in messages" :key="msg._id" 
+            <div v-for="(msg, idx) in messages" :key="msg._id" 
               :class="['flex w-full relative z-10', isMe(msg) ? 'justify-end' : 'justify-start']"
             >
-              <div :class="[
-                'max-w-[85%] px-4 py-2.5 rounded-2xl text-[14px] font-semibold shadow-sm relative',
-                isMe(msg) 
-                  ? 'bg-primary-600 text-white rounded-tr-none' 
-                  : 'bg-white text-gray-900 border border-gray-100 rounded-tl-none'
-              ]">
-                <!-- Tail logic -->
-                <div v-if="isMe(msg)" class="absolute top-0 -right-1.5 w-3 h-3 bg-primary-600 clip-path-tail-right"></div>
-                <div v-else class="absolute top-0 -left-1.5 w-3 h-3 bg-white clip-path-tail-left"></div>
+              <div v-if="shouldShowDate(msg, messages[idx-1])" class="w-full flex justify-center my-4 sticky top-0 z-20">
+                <span class="px-3 py-1 bg-[#d1d7db] text-[#54656f] text-[11px] font-bold rounded-lg uppercase tracking-wider shadow-sm">{{ formatDateLabel(msg.createdAt) }}</span>
+              </div>
 
-                <p v-if="msg.type === 'text'" class="whitespace-pre-wrap leading-relaxed">{{ msg.content }}</p>
-                <div v-if="msg.type === 'image'" class="rounded-xl overflow-hidden border border-black/5 mb-1 mt-1">
-                  <img :src="msg.mediaUrl" class="max-w-full h-auto" />
+              <div :class="[
+                'max-w-[85%] px-2 py-1 rounded-lg text-[14px] shadow-sm relative group',
+                isMe(msg) 
+                  ? 'bg-[#dcf8c6] text-[#111b21]' 
+                  : 'bg-white text-[#111b21]'
+              ]">
+                <!-- Tail -->
+                <div v-if="isMe(msg)" class="absolute top-0 -right-2 w-3 h-3 bg-[#dcf8c6] clip-path-tail-right"></div>
+                <div v-else class="absolute top-0 -left-2 w-3 h-3 bg-white clip-path-tail-left"></div>
+
+                <!-- Image -->
+                <div v-if="msg.type === 'image'" class="relative mb-1 p-0.5">
+                  <div class="rounded-lg overflow-hidden border border-black/5 bg-gray-100">
+                    <img :src="msg.mediaUrl" class="max-w-full h-auto object-cover min-w-[200px]" />
+                  </div>
+                  <p v-if="msg.content" class="mt-2 px-1 pb-1 font-medium leading-relaxed">{{ msg.content }}</p>
                 </div>
+
+                <!-- Text -->
+                <p v-else class="px-1 py-0.5 font-medium leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
                 
-                <div class="flex items-center justify-end gap-1.5 mt-1.5 opacity-60">
-                  <span class="text-[9px] font-black uppercase tracking-tighter">{{ formatTime(msg.createdAt) }}</span>
-                  <CheckCheck v-if="isMe(msg)" :size="14" :class="msg.isRead ? 'text-blue-200' : 'text-white/60'" stroke-width="3" />
+                <!-- Status & Time -->
+                <div class="flex items-center justify-end gap-1 px-1 select-none">
+                  <span class="text-[10px] text-[#667781] font-medium">{{ formatTime(msg.createdAt) }}</span>
+                  <div v-if="isMe(msg)" class="flex items-center">
+                    <CheckCheck v-if="msg.isRead" :size="15" class="text-[#53bdeb]" />
+                    <Check v-else :size="15" class="text-[#667781]" />
+                  </div>
                 </div>
               </div>
             </div>
-            <div v-if="isTyping" class="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur shadow-sm rounded-full w-fit">
-              <span class="text-[10px] text-primary-600 font-black tracking-widest uppercase animate-pulse">Typing...</span>
+
+            <!-- Typing -->
+            <div v-if="isTyping" class="flex items-center gap-2 px-3 py-1.5 bg-white shadow-sm rounded-lg w-fit relative z-10 animate-in fade-in slide-in-from-bottom-2">
+              <div class="flex gap-1">
+                <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
+                <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emoji Picker -->
+          <div v-if="showEmojiPicker" class="absolute bottom-20 left-4 right-4 z-50 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 animate-in slide-in-from-bottom-4 duration-300">
+            <div class="flex items-center justify-between mb-3 px-1">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Emojis</span>
+              <button @click="showEmojiPicker = false" class="text-gray-400 hover:text-red-500 transition-colors"><X :size="16" /></button>
+            </div>
+            <div class="grid grid-cols-8 gap-2 overflow-y-auto max-h-48 no-scrollbar">
+              <button 
+                v-for="emoji in popularEmojis" 
+                :key="emoji" 
+                @click="addEmoji(emoji)"
+                class="text-2xl hover:scale-125 transition-transform p-1 active:scale-95"
+              >
+                {{ emoji }}
+              </button>
             </div>
           </div>
 
           <!-- Input Area -->
-          <div class="p-5 bg-white border-t border-gray-50 z-20 shrink-0">
-            <div class="flex items-end gap-3 bg-gray-50 rounded-[28px] p-1.5 border-2 border-transparent focus-within:border-primary-500 focus-within:bg-white transition-all shadow-inner">
-              <button @click="triggerFileUpload" class="p-3 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-2xl transition-all">
-                <Paperclip :size="20" stroke-width="2.5" />
+          <div class="p-3 bg-[#f0f2f5] z-20 shrink-0 flex items-end gap-2">
+            <div class="flex-1 flex items-end gap-2 bg-white rounded-[24px] px-3 py-1.5 shadow-sm min-h-[48px]">
+              <button @click="showEmojiPicker = !showEmojiPicker" class="p-2 text-[#54656f] hover:text-[#075e54] transition-colors">
+                <Smile :size="24" />
+              </button>
+              <button @click="triggerFileUpload" class="p-2 text-[#54656f] hover:text-[#075e54] transition-colors">
+                <Paperclip :size="24" class="rotate-45" />
               </button>
               <textarea 
                 v-model="newMessage" 
                 @keydown.enter.prevent="handleSendMessage"
                 @input="handleTyping"
-                placeholder="Message support..." 
+                placeholder="Type a message" 
                 rows="1"
-                class="flex-1 bg-transparent border-none focus:ring-0 text-[14px] py-3 resize-none outline-none font-bold text-gray-900 min-h-[44px] max-h-32"
+                class="flex-1 bg-transparent border-none focus:ring-0 text-[15px] py-2 resize-none outline-none font-medium text-[#111b21] min-h-[36px] max-h-32 placeholder:text-[#8696a0]"
               ></textarea>
-              <button 
-                @click="handleSendMessage"
-                :disabled="!newMessage.trim()"
-                class="w-12 h-12 flex items-center justify-center bg-primary-600 text-white rounded-2xl disabled:opacity-50 transition-all hover:bg-primary-700 active:scale-95 shadow-lg shadow-primary-200"
-              >
-                <Send :size="20" class="ml-0.5" stroke-width="2.5" />
-              </button>
             </div>
+            
+            <button 
+              @click="handleSendMessage"
+              class="w-12 h-12 flex items-center justify-center bg-[#00a884] text-white rounded-full shadow-md active:scale-90 transition-all shrink-0"
+            >
+              <Send v-if="newMessage.trim()" :size="22" class="ml-1" />
+              <Mic v-else :size="22" />
+            </button>
             <input type="file" ref="fileInput" class="hidden" @change="handleFileUpload" accept="image/*" />
           </div>
         </template>
@@ -130,15 +215,16 @@
 
     <!-- Floating Bubble -->
     <button 
+      v-if="!isOpen || !isMobile"
       @click="toggleChat"
-      class="w-16 h-16 rounded-[28px] flex items-center justify-center shadow-[0_12px_32px_rgba(0,0,0,0.18)] transition-all active:scale-95 pointer-events-auto relative overflow-hidden group border-2"
-      :class="isOpen ? 'bg-gray-900 text-white border-gray-800' : 'bg-primary-600 text-white border-primary-500'"
+      class="w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 pointer-events-auto relative overflow-hidden group"
+      :class="isOpen ? 'bg-[#075e54] text-white' : 'bg-[#25d366] text-white'"
     >
       <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      <X v-if="isOpen" :size="28" stroke-width="3" />
-      <MessageCircle v-else :size="28" stroke-width="2.5" class="relative z-10" />
+      <X v-if="isOpen" :size="24" stroke-width="3" />
+      <MessageSquare v-else :size="26" stroke-width="2.5" class="relative z-10" />
       
-      <span v-if="!isOpen && unreadCount > 0" class="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white text-[10px] rounded-xl flex items-center justify-center font-black shadow-lg animate-bounce border-2 border-white">
+      <span v-if="!isOpen && unreadCount > 0" class="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1.5 bg-[#00a884] text-white text-[11px] rounded-full flex items-center justify-center font-black shadow-lg border-2 border-white animate-bounce">
         {{ unreadCount }}
       </span>
     </button>
@@ -154,16 +240,33 @@ import {
   Paperclip, 
   Send, 
   CheckCheck, 
+  Check,
   MessageCircle,
-  Smile
+  Smile,
+  Mic,
+  ArrowLeft,
+  Video,
+  Phone,
+  MoreVertical,
+  UserCircle2,
+  Crop,
+  Type,
+  Pencil,
+  MessageSquare
 } from 'lucide-vue-next'
 import { useChatState } from '@/composables/modules/chat/useChatState'
 import { useSendMessage } from '@/composables/modules/chat/useSendMessage'
 import { useFetchConversations } from '@/composables/modules/chat/useFetchConversations'
 import { useFetchMessages } from '@/composables/modules/chat/useFetchMessages'
+import { useGuestChat } from '@/composables/modules/chat/useGuestChat'
+import { useChatActions } from '@/composables/modules/chat/useChatActions'
+import { useFileUpload } from '@/composables/core/useFileUpload'
 import { useUser } from '@/composables/modules/auth/user'
 
 const { user } = useUser()
+const { initiateGuestChat } = useGuestChat()
+const { createSupportConversation } = useChatActions()
+const { uploadFile, loading: uploadingFile } = useFileUpload()
 const { 
   initSocket, 
   messages, 
@@ -183,6 +286,13 @@ const newMessage = ref('')
 const messageContainer = ref<HTMLElement | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const isMobile = ref(false)
+const showEmojiPicker = ref(false)
+
+const selectedImage = ref<File | null>(null)
+const selectedImagePreview = ref('')
+const imageCaption = ref('')
+
+const popularEmojis = ['😀', '😂', '😍', '👍', '🙏', '🔥', '✨', '🎉', '💔', '😭', '😎', '🤔', '🙌', '💯', '🚀', '❤️', '✅', '❌', '🙄', '😴', '💪', '🥳', '🥺', '🤩', '💡', '📍', '🛍️', '💰', '🎓', '🤝', '👋', '⭐']
 
 const guestInfo = ref({
   name: '',
@@ -214,19 +324,16 @@ const toggleChat = async () => {
   }
 }
 
+const addEmoji = (emoji: string) => {
+  newMessage.value += emoji
+  showEmojiPicker.value = false
+}
+
 const submitGuestInfo = async () => {
   if (!isGuestInfoValid.value) return
   
-  const config = useRuntimeConfig()
   try {
-    const response = await $fetch(`${config.public.apiBase}/chat/support/guest`, {
-      method: 'POST',
-      body: { 
-        guestInfo: guestInfo.value,
-        isSupport: true,
-        subject: `Guest: ${guestInfo.value.name}`
-      }
-    }) as any
+    const response = await initiateGuestChat(guestInfo.value) as any
     
     localStorage.setItem('guest_chat_id', response._id)
     localStorage.setItem('guest_info', JSON.stringify(guestInfo.value))
@@ -246,12 +353,31 @@ const ensureSupportConversation = async () => {
   } else if (!supportConv && user.value) {
     await fetchConversations()
     supportConv = conversations.value.find(c => c.isSupport)
+    
+    if (!supportConv) {
+      try {
+        supportConv = await createSupportConversation() as any
+        await fetchConversations()
+      } catch (e) {
+        console.error('Failed to auto-create support chat', e)
+      }
+    }
   }
   
   if (supportConv) {
     activeConversation.value = supportConv
-    initSocket(true) // Ensure socket is init with either token or guestId
-    socket.value?.emit('join_conversation', { conversationId: supportConv._id })
+    initSocket(true) 
+    
+    if (socket.value) {
+      if (socket.value.connected) {
+        socket.value.emit('join_conversation', { conversationId: supportConv._id })
+      } else {
+        socket.value.on('connect', () => {
+          socket.value?.emit('join_conversation', { conversationId: supportConv._id })
+        })
+      }
+    }
+    
     await fetchMessages(supportConv._id, !user.value)
     scrollToBottom()
   }
@@ -265,6 +391,7 @@ const handleSendMessage = () => {
     content: newMessage.value.trim()
   })
   newMessage.value = ''
+  showEmojiPicker.value = false
   scrollToBottom()
 }
 
@@ -279,32 +406,63 @@ const handleTyping = () => {
 }
 
 const isMe = (msg: any) => {
+  if (msg.isSystem) return false
   if (user.value) return msg.sender?._id === user.value._id
-  return !msg.sender // Guest
+  return !msg.sender 
 }
 
 const triggerFileUpload = () => fileInput.value?.click()
 
-const handleFileUpload = async (event: Event) => {
+const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (!target.files?.length || !activeConversation.value) return
-  const file = target.files[0]
-  const formData = new FormData()
-  formData.append('file', file)
+  selectedImage.value = target.files[0]
+  selectedImagePreview.value = URL.createObjectURL(selectedImage.value)
+  imageCaption.value = ''
+}
+
+const cancelImageUpload = () => {
+  selectedImage.value = null
+  selectedImagePreview.value = ''
+  imageCaption.value = ''
+  if (fileInput.value) fileInput.value.value = ''
+}
+
+const confirmImageUpload = async () => {
+  if (!selectedImage.value || !activeConversation.value || uploadingFile.value) return
+  
   try {
-    const config = useRuntimeConfig()
-    const response = await $fetch(`${config.public.apiBase}/upload/single`, {
-      method: 'POST',
-      body: formData
-    }) as any
-    sendMessage({
-      conversationId: activeConversation.value._id,
-      type: 'image',
-      mediaUrl: response.url || response.data?.url
-    })
+    const data = await uploadFile(selectedImage.value)
+    if (data) {
+      sendMessage({
+        conversationId: activeConversation.value._id,
+        type: 'image',
+        mediaUrl: data.url,
+        content: imageCaption.value.trim()
+      })
+      cancelImageUpload()
+      scrollToBottom()
+    }
   } catch (e) {
     console.error('Upload failed', e)
   }
+}
+
+const shouldShowDate = (msg: any, prevMsg: any) => {
+  if (!prevMsg) return true
+  const d1 = new Date(msg.createdAt).toDateString()
+  const d2 = new Date(prevMsg.createdAt).toDateString()
+  return d1 !== d2
+}
+
+const formatDateLabel = (dateStr: string) => {
+  const date = new Date(dateStr)
+  const today = new Date()
+  if (date.toDateString() === today.toDateString()) return 'Today'
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 const scrollToBottom = () => {
@@ -342,4 +500,16 @@ onMounted(() => {
 }
 .clip-path-tail-right { clip-path: polygon(0 0, 0 100%, 100% 0); }
 .clip-path-tail-left { clip-path: polygon(100% 0, 100% 100%, 0 0); }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+textarea::placeholder {
+  color: #8696a0;
+}
 </style>

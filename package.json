@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-   "dev": "NUXT_VITE_NODE_OPTIONS='{\"socketPath\":\"/tmp/nuxt-student.sock\"}' nuxt dev --port 3002",
+    "dev": "NUXT_PORT=3002 nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"

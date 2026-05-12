@@ -7,7 +7,13 @@ export const useAiCopy = () => {
   const { startLoading, stopLoading } = useLoader();
   const { showToast } = useCustomToast();
 
-  const generateCopy = async (data: { productId: string; tone?: string; keywords?: string[] }) => {
+  const generateCopy = async (data: { 
+    productName: string; 
+    price: number; 
+    description: string; 
+    category?: string;
+    tone?: string; 
+  }) => {
     loading.value = true;
     startLoading("Generating AI copy...");
     try {

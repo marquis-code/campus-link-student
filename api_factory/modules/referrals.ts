@@ -1,4 +1,4 @@
-import { GATEWAY_ENDPOINT_WITH_AUTH } from "../axios.config";
+import { GATEWAY_ENDPOINT_WITH_AUTH, GATEWAY_ENDPOINT } from "../axios.config";
 
 export const referrals_api = {
   createReferral: (productId: string) => {
@@ -9,5 +9,8 @@ export const referrals_api = {
   },
   deleteReferral: (id: string) => {
     return GATEWAY_ENDPOINT_WITH_AUTH.delete(`/referrals/${id}`);
+  },
+  trackReferral: (code: string) => {
+    return GATEWAY_ENDPOINT.get(`/referrals/track/${code}`);
   },
 };

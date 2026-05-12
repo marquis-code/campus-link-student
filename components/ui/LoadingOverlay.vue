@@ -29,7 +29,7 @@
           />
         </svg>
       </div>
-      <p class="mt-8 text-black font-bold tracking-[0.2em] uppercase text-[10px] animate-pulse">Loading Hub</p>
+      <p class="mt-8 text-black font-bold  uppercase text-sm animate-pulse">Loading Hub</p>
     </div>
   </Transition>
 </template>

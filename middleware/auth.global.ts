@@ -1,11 +1,13 @@
 export default defineNuxtRouteMiddleware((to) => {
   const { token } = useUser()
   
-  const publicPaths = ['/login', '/signup', '/']
-  const isPublicPath = publicPaths.includes(to.path)
+  const publicPaths = ['/login', '/signup', '/', '/forgot-password', '/reset-password']
+  const isPublicPath = publicPaths.includes(to.path) || to.path.startsWith('/products/') || to.path.startsWith('/p/') || to.path === '/orders/success'
 
   if (token.value && isPublicPath) {
-    return navigateTo('/dashboard')
+    if (to.path === '/login' || to.path === '/signup') {
+      return navigateTo('/dashboard')
+    }
   }
 
   if (!token.value && !isPublicPath) {

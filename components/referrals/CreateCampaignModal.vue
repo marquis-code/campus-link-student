@@ -8,7 +8,7 @@
             <div class="h-20 px-8 flex items-center justify-between border-b border-gray-100">
                <div class="flex items-center gap-3">
                   <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                     <Icon name="Plus" class="text-white" size="20" />
+                     <Plus class="text-white" :size="20" />
                   </div>
                   <div>
                      <h3 class="text-lg font-bold text-gray-900">New Campaign</h3>
@@ -16,7 +16,7 @@
                   </div>
                </div>
                <button @click="close" class="w-10 h-10 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-400">
-                 <Icon name="X" size="20" />
+                 <X :size="20" />
                </button>
             </div>
 
@@ -32,7 +32,7 @@
                     class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-black transition-all"
                   />
                   <div class="absolute right-4 top-4 text-gray-300">
-                     <Icon name="Search" size="20" />
+                     <Search :size="20" />
                   </div>
                 </div>
 
@@ -54,10 +54,10 @@
                       </div>
                       <div class="flex-1 min-w-0">
                          <p class="text-sm font-bold truncate">{{ p.name }}</p>
-                         <p class="text-[10px] uppercase font-bold" :class="selectedProduct?._id === p._id ? 'text-white/60' : 'text-green-600'">₦{{ p.commissionAmount }} / Sale</p>
+                         <p class="text-sm uppercase font-bold" :class="selectedProduct?._id === p._id ? 'text-white/60' : 'text-green-600'">₦{{ p.commissionAmount }} / Sale</p>
                       </div>
                       <div v-if="selectedProduct?._id === p._id" class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                         <Icon name="Check" size="14" />
+                         <Check :size="14" />
                       </div>
                     </button>
                   </template>
@@ -75,7 +75,7 @@
                 :disabled="!selectedProduct || creating"
                 class="w-full py-4 bg-black text-white rounded-2xl font-bold text-sm shadow-xl hover:bg-gray-900 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                >
-                 <Icon v-if="creating" name="RefreshCw" class="animate-spin" size="18" />
+                 <RefreshCw v-if="creating" class="animate-spin" :size="18" />
                  <template v-else>Launch Campaign</template>
                </button>
             </div>
@@ -87,6 +87,8 @@
 </template>
 
 <script setup lang="ts">
+import { Plus, X, Search, Check, RefreshCw } from 'lucide-vue-next'
+
 const props = defineProps<{
   modelValue: boolean
 }>()
@@ -96,10 +98,10 @@ const emit = defineEmits(['update:modelValue', 'created'])
 const close = () => emit('update:modelValue', false)
 
 const { products, loading, fetchProducts } = useFetchProducts()
+const { createReferral, loading: creating } = useCreateReferral()
 const { user } = useUser()
 const search = ref('')
 const selectedProduct = ref<any>(null)
-const creating = ref(false)
 
 // Debounced search
 const debouncedSearch = ref('')
@@ -129,9 +131,8 @@ const { showToast } = useCustomToast()
 
 const handleCreate = async () => {
   if (!selectedProduct.value) return
-  creating.value = true
   try {
-    const res = await $api.referrals.createReferral(selectedProduct.value._id)
+    const res = await createReferral(selectedProduct.value._id)
     if (res.type !== 'ERROR') {
       showToast({
         title: 'Campaign Launched',
@@ -147,8 +148,6 @@ const handleCreate = async () => {
        message: 'Failed to create campaign asset. Please try again.',
        toastType: 'error'
     })
-  } finally {
-    creating.value = false
   }
 }
 </script>

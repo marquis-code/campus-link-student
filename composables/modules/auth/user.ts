@@ -1,63 +1,51 @@
 import { watch } from 'vue'
 
-const userState = () => useState<any>("user_data", () => {
-  if (import.meta.client) {
-    const stored = localStorage.getItem("user_data");
-    try {
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  }
-  return null;
-});
-
-const tokenState = () => useState<string | null>("auth_token", () => {
-  if (import.meta.client) {
-    return localStorage.getItem("auth_token") || null;
-  }
-  return null;
-});
-
-let watchersInitialized = false;
-
 export const useUser = () => {
-  const user = userState();
-  const token = tokenState();
+  // Use cookies for persistence across client and server
+  const user = useCookie<any>("user_data", {
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
+  })
+  
+  const token = useCookie<string | null>("auth_token", {
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
+  })
 
-  if (import.meta.client && !watchersInitialized) {
-    watchersInitialized = true;
-    
+  // Sync with localStorage for any legacy components (optional, but good for backward compatibility)
+  if (import.meta.client) {
     watch(user, (val) => {
       if (val) {
-        localStorage.setItem("user_data", JSON.stringify(val));
+        localStorage.setItem("user_data", JSON.stringify(val))
       } else {
-        localStorage.removeItem("user_data");
+        localStorage.removeItem("user_data")
       }
-    }, { deep: true });
+    }, { deep: true, immediate: true })
 
     watch(token, (val) => {
       if (val) {
-        localStorage.setItem("auth_token", val);
+        localStorage.setItem("auth_token", val)
       } else {
-        localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_token")
       }
-    });
+    }, { immediate: true })
   }
 
   const logOut = () => {
-    user.value = null;
-    token.value = null;
+    user.value = null
+    token.value = null
     if (import.meta.client) {
-      localStorage.removeItem("user_data");
-      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_data")
+      localStorage.removeItem("auth_token")
     }
-    navigateTo("/login");
-  };
+    return navigateTo("/login")
+  }
 
   return {
     user,
     token,
     logOut,
-  };
-};
+  }
+}

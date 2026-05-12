@@ -91,7 +91,7 @@
 
     <!-- Error -->
     <Transition name="fade">
-      <div v-if="errorMessage && showError" class="mt-2 flex items-center text-red-500 text-[10px] font-black uppercase tracking-wider gap-1.5 ml-1">
+      <div v-if="errorMessage && showError" class="mt-2 flex items-center text-red-500 text-sm font-black uppercase tracking-wider gap-1.5 ml-1">
         <AlertCircle class="w-3.5 h-3.5" />
         {{ errorMessage }}
       </div>

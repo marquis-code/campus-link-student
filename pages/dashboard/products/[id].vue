@@ -10,7 +10,7 @@
       <!-- Back Button -->
       <div class="p-4 absolute top-0 left-0 z-10">
         <button @click="$router.back()" class="w-10 h-10 glass-card flex items-center justify-center">
-          <Icon name="ph:arrow-left-bold" class="text-xl" />
+          <ArrowLeft class="text-xl" />
         </button>
       </div>
 
@@ -25,7 +25,7 @@
         <div v-if="orderCreated" class="space-y-6">
           <div class="text-center space-y-2">
             <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Icon name="ph:check-circle-duotone" class="text-4xl" />
+              <CheckCircle2 :size="32" />
             </div>
             <h2 class="text-2xl font-bold text-dark-900">Order placed!</h2>
             <p class="text-dark-500">Pay via bank transfer to confirm your order.</p>
@@ -33,23 +33,26 @@
 
           <div class="bg-dark-50 p-6 rounded-3xl space-y-4 border border-dark-100">
             <div class="flex justify-between items-center pb-4 border-b border-dark-200">
-              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Bank name</span>
+              <span class="text-dark-500 font-bold tracking-wider text-sm">Bank name</span>
               <span class="text-dark-900 font-bold">{{ orderCreated.bankName }}</span>
             </div>
             <div class="flex justify-between items-center py-2">
-              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Account number</span>
+              <span class="text-dark-500 font-bold tracking-wider text-sm">Account number</span>
               <div class="flex items-center gap-2">
                 <span class="text-dark-900 font-bold text-xl">{{ orderCreated.accountNumber }}</span>
-                <button @click="copy(orderCreated.accountNumber)" class="p-1 text-primary-600"><Icon name="ph:copy-bold" /></button>
+                <button @click="copy(orderCreated.accountNumber)" class="p-1 text-primary-600"><Copy :size="18" /></button>
               </div>
             </div>
             <div class="flex justify-between items-center py-2">
-              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Account name</span>
+              <span class="text-dark-500 font-bold tracking-wider text-sm">Account name</span>
               <span class="text-dark-900 font-bold">{{ orderCreated.accountName }}</span>
             </div>
             <div class="flex justify-between items-center pt-4 border-t border-dark-200">
-              <span class="text-dark-500 font-bold tracking-wider text-[10px]">Amount due</span>
-              <span class="text-primary-600 font-bold text-lg">₦{{ orderCreated.totalAmount.toLocaleString() }}</span>
+              <div class="space-y-1">
+                <span class="text-dark-500 font-bold tracking-wider text-sm block">Total payable</span>
+                <span v-if="orderCreated.fee" class="text-sm text-dark-400 font-medium italic">Includes ₦{{ orderCreated.fee.toLocaleString() }} transfer charge</span>
+              </div>
+              <span class="text-primary-600 font-bold text-lg">₦{{ orderCreated.totalPayable.toLocaleString() }}</span>
             </div>
           </div>
           
@@ -89,8 +92,8 @@
           </div>
           <div class="flex gap-4">
             <button @click="showOrderForm = false" class="btn-secondary flex-1 py-4 font-bold">Cancel</button>
-            <button @click="handlePlaceOrder" :disabled="orderLoading" class="btn-primary flex-[2] py-4 flex justify-center font-bold">
-              <Icon v-if="orderLoading" name="ph:spinner-bold" class="animate-spin text-2xl" />
+            <button @click="handlePlaceOrder" :disabled="orderLoading" class="btn-primary flex-[2] py-4 flex justify-center font-bold items-center gap-2">
+              <Loader2 v-if="orderLoading" class="animate-spin" :size="20" />
               <span v-else>Confirm order</span>
             </button>
           </div>
@@ -102,7 +105,7 @@
               <span class="px-3 py-1 bg-primary-50 text-primary-600 text-xs font-bold rounded-full tracking-wider">{{ product.category?.name }}</span>
               <h1 class="text-3xl font-bold text-dark-900 leading-tight pt-1">{{ product.name }}</h1>
               <p class="text-dark-500 font-medium flex items-center gap-1">
-                <Icon name="ph:map-pin-duotone" class="text-primary-500" />
+                <MapPin :size="16" class="text-primary-500" />
                 {{ product.campus?.name }}
               </p>
             </div>
@@ -119,7 +122,7 @@
 
           <div v-if="isPromoter" class="bg-primary-50 p-6 rounded-3xl flex items-center gap-4">
             <div class="w-14 h-14 bg-primary-600 text-white rounded-2xl flex items-center justify-center text-2xl">
-              <Icon name="ph:megaphone-duotone" />
+              <Megaphone :size="24" />
             </div>
             <div class="flex-1">
               <h4 class="font-bold text-primary-900">Earn from this product</h4>
@@ -128,14 +131,14 @@
           </div>
 
           <div class="grid grid-cols-1 gap-4 pt-4">
-            <NuxtLink v-if="isPromoter" :to="`/promote/${product._id}`" class="btn-primary py-5 text-lg text-center font-bold">
+            <NuxtLink v-if="isPromoter" :to="`/promote/${product._id}`" class="btn-primary py-3 text-lg text-center font-bold">
               Promote & earn commission
             </NuxtLink>
-            <button @click="showOrderForm = true" class="btn-primary py-5 text-lg text-center font-bold">
+            <button @click="showOrderForm = true" class="btn-primary py-3 text-lg text-center font-bold">
               Order now — ₦{{ product.price?.toLocaleString() }}
             </button>
             <a :href="`https://wa.me/${product.seller?.phone}?text=Hello, I am interested in buying ${product.name} from CampusLink`" target="_blank" class="btn-secondary py-5 text-lg text-center flex items-center justify-center gap-2 font-bold">
-              <Icon name="ph:whatsapp-logo-fill" class="text-emerald-500 text-2xl" />
+              <MessageCircle class="text-emerald-500" :size="24" />
               Chat with seller
             </a>
           </div>
@@ -146,6 +149,16 @@
 </template>
 
 <script setup lang="ts">
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  Copy, 
+  MapPin, 
+  MessageCircle, 
+  ArrowRight,
+  Megaphone,
+  Loader2
+} from 'lucide-vue-next'
 import AnimatedInput from '@/components/ui/AnimatedInput.vue'
 
 const route = useRoute()
